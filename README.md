@@ -15,9 +15,11 @@ Take citation and co-authorship graphs as input (but not only!) in order to:
 
 ## Resources links: 
 
+[Arxiv dataset](https://www.kaggle.com/Cornell-University/arxiv)
+
 [Mining graphs](http://infolab.stanford.edu/~ullman/mmds/ch10.pdf)
 
-[Relative Citation Ratio](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.1002541)
+<s>[Relative Citation Ratio](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.1002541)</s>
 
 [Co-authorship analysis](https://www.digital-science.com/blog/2017/03/connected-culture-collaboration-recognising-understanding-value-research/)
 
