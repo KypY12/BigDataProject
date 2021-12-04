@@ -2,13 +2,13 @@
 
 Take citation and co-authorship graphs as input (but not only!) in order to:
 
-    a) Look for collaboration islands - see what researchers are more likely to collaborate with each other (co-authorship). Is it influenced by research field, locations, affiliations, funding/grants?
+\t a) Look for collaboration islands - see what researchers are more likely to collaborate with each other (co-authorship). Is it influenced by research field, locations, affiliations, funding/grants?
 
-    b) Analyze how research ideas are spreading through space and time.
+\t b) Analyze how research ideas are spreading through space and time.
 
-    c) Look for emerging research fields and make forecasts for their influence within the research domain based on history, funding, and affiliation (location) information.
+\t c) Look for emerging research fields and make forecasts for their influence within the research domain based on history, funding, and affiliation (location) information.
 
-    d) Check for rising stars (authors with high growth in number of publications)
+\t d) Check for rising stars (authors with high growth in number of publications)
 
 ## Project links:
 
