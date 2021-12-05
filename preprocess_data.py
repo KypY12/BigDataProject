@@ -4,40 +4,42 @@ from pyspark.sql import SparkSession
 import pyspark.sql.functions as f
 from pyspark.sql.types import ArrayType, StructType, StructField, StringType
 
-
-def preprocess_map(row, author_index=2, article_id_index=6):
-    return [(" ".join(author), row[article_id_index]) for author in row[author_index]]
-
-
 if __name__ == '__main__':
     session = SparkSession \
         .builder \
         .appName("Testing") \
         .getOrCreate()
 
-    metadata_df = session.read.json("arxiv-metadata-oai-snapshot.json")
+    sample_size = 100
+
+    metadata_df = session.read.json("arxiv-metadata-oai-snapshot.json").limit(sample_size)
 
     metadata_df.printSchema()
     metadata_df.show()
 
     # print(metadata_df.rdd.getNumPartitions())
 
-    # metadata_df.write.option("header", True) \
-    #     .mode("overwrite") \
-    #     .json("arxiv-metadata")
-
     udf_res_schema = ArrayType(StructType([
         StructField("author_1", StringType(), False),
         StructField("author_2", StringType(), False)
     ]))
-    comb_udf = f.udf(lambda x: list(itertools.combinations([" ".join(y) for y in x], 2)), udf_res_schema)
-    authors_df = metadata_df.withColumn("authors_processed", f.explode(comb_udf(f.col("authors_parsed")))) \
-        .select(f.col("authors_processed.*"),
+    comb_udf = f.udf(lambda x: list(itertools.combinations([" ".join(y) for y in x], 2)),
+                     udf_res_schema)
+
+    authors_df = metadata_df \
+        .withColumn("authors_processed", f.explode(comb_udf(f.col("authors_parsed")))) \
+        .select(f.col("authors_processed")["author_1"].alias("author_1"),
+                f.col("authors_processed")["author_2"].alias("author_2"),
                 f.col("id").alias("article_id"),
                 f.split(f.col("categories"), " ").alias("article_categories"),
                 f.col("title"),
                 f.col("update_date"))
     authors_df.show()
+
+    # authors_df.write \
+    #     .option("header", True) \
+    #     .mode("overwrite") \
+    #     .json("arxiv-processed")
 
 # IF WE USE A BIPARTITE GRAPH
 # authors_df = metadata_df.select(f.explode(f.col("authors_parsed")), *[f.col(c) for c in metadata_df.columns if
