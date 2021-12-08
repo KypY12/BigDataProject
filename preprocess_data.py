@@ -4,18 +4,30 @@ from pyspark.sql import SparkSession
 import pyspark.sql.functions as f
 from pyspark.sql.types import ArrayType, StructType, StructField, StringType
 
+
+def get_combinations(x):
+    if len(x) == 1:
+        name = " ".join(x[0])
+        return [(name, name)]
+    else:
+        # return list(itertools.combinations([" ".join(y) for y in x], 2))
+        return list(filter(lambda t: t[0] != t[1], list(itertools.product([" ".join(y) for y in x], repeat=2))))
+
+
 if __name__ == '__main__':
     session = SparkSession \
         .builder \
         .appName("Testing") \
         .getOrCreate()
 
+    session.sparkContext.setCheckpointDir("./checkpoint")
+
     sample_size = 100
 
     metadata_df = session.read.json("arxiv-metadata-oai-snapshot.json").limit(sample_size)
 
-    metadata_df.printSchema()
-    metadata_df.show()
+    # metadata_df.printSchema()
+    # metadata_df.show()
 
     # print(metadata_df.rdd.getNumPartitions())
 
@@ -23,47 +35,65 @@ if __name__ == '__main__':
         StructField("author_1", StringType(), False),
         StructField("author_2", StringType(), False)
     ]))
-    comb_udf = f.udf(lambda x: list(itertools.combinations([" ".join(y) for y in x], 2)),
-                     udf_res_schema)
+    comb_udf = f.udf(get_combinations, udf_res_schema)
 
-    authors_df = metadata_df \
+    authors_e = metadata_df \
         .withColumn("authors_processed", f.explode(comb_udf(f.col("authors_parsed")))) \
-        .select(f.col("authors_processed")["author_1"].alias("author_1"),
-                f.col("authors_processed")["author_2"].alias("author_2"),
+        .select(f.col("authors_processed")["author_1"].alias("src"),
+                f.col("authors_processed")["author_2"].alias("dst"),
                 f.col("id").alias("article_id"),
                 f.split(f.col("categories"), " ").alias("article_categories"),
                 f.col("title"),
                 f.col("update_date"))
-    authors_df.show()
 
-    # authors_df.write \
+    # ).alias("a1") \
+    # .join(metadata_df.alias("a2"), f.col("a1.article_id") == f.col("a2.id"), "left")
+
+    authors_e.show(20)
+
+    # Edges weights
+    authors_counts = authors_e.groupBy([f.col("src"), f.col("dst")]).count().orderBy("count", ascending=False)
+    authors_counts.show()
+
+    # name = "Berger E. L. "
+    # authors_e.where((authors_e["src"] == name) | (authors_e["dst"] == name)).show(100)
+
+    # authors_e.where(f.col("src") == "Callan David ").show()
+    # authors_e.where(f.col("dst") == "Callan David ").show()
+
+    try:
+        import graphframes as gf
+    except:
+        print("error")
+
+    # Create a Vertex DataFrame with unique ID column "id"
+    authors_v = metadata_df.select(f.explode(f.col("authors_parsed")).alias("author")) \
+        .select(f.concat_ws(" ", f.col("author")).alias("id")).distinct()
+
+    # authors_v.where(f.col("id") == "Pan Hongjun ").show()
+    # authors_v.where(f.col("id") == "Choi Dohoon ").show()
+
+    authors_v.show()
+
+    g = gf.GraphFrame(authors_v, authors_counts)
+
+    g.degrees.where(f.col("id") == "Berger E. L. ").show()
+    g.degrees.orderBy("degree", ascending=False).show()
+
+    # g.connectedComponents().show()
+    # g.connectedComponents().orderBy("component").show()
+
+    # authors_e.write \
     #     .option("header", True) \
     #     .mode("overwrite") \
     #     .json("arxiv-processed")
 
 # IF WE USE A BIPARTITE GRAPH
-# authors_df = metadata_df.select(f.explode(f.col("authors_parsed")), *[f.col(c) for c in metadata_df.columns if
+# authors_e = metadata_df.select(f.explode(f.col("authors_parsed")), *[f.col(c) for c in metadata_df.columns if
 #                                                                       c not in ["authors", "authors_parsed", ""]]) \
 #     .select(f.concat_ws(" ", f.col("col")),
 #             *[f.col(c) for c in metadata_df.columns if c not in ["authors", "authors_parsed", ""]])
-# authors_df = metadata_df.select(f.explode(f.col("authors_parsed")), f.col("id")) \
+# authors_e = metadata_df.select(f.explode(f.col("authors_parsed")), f.col("id")) \
 #     .select(f.concat_ws(" ", f.col("col")), f.col("id")) \
 #     .toDF("author", "article_id")
 
-# USING SELF JOIN (with duplicate rows ...)
-# authors_df = metadata_df.select(f.explode(f.col("authors_parsed")).alias("authors"),
-#                                 f.col("id").alias("article_id"),
-#                                 f.split(f.col("categories"), " ").alias("article_categories"),
-#                                 f.col("title"),
-#                                 f.col("update_date")) \
-#     .select(f.concat_ws(" ", f.col("authors")).alias("authors"),
-#             *[f.col(c) for c in ["article_id", "article_categories", "title", "update_date"]])
-# authors_df.show()
-# another_df = authors_df.alias("a1").join(authors_df.alias("a2"),
-#                                          on=f.col("a1.article_id") == f.col("a2.article_id"),
-#                                          how="inner") \
-#     .select(f.col("a1.authors").alias("author_1"),
-#             f.col("a2.authors").alias("author_2"),
-#             *[f.col("a1." + c).alias(c) for c in ["article_id", "article_categories", "title", "update_date"]]) \
-#     .where(f.col("author_1") != f.col("author_2"))
-# another_df.show()
