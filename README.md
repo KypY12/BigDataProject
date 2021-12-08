@@ -17,10 +17,14 @@ Take citation and co-authorship graphs as input (but not only!) in order to:
 
 [Arxiv dataset](https://www.kaggle.com/Cornell-University/arxiv)
 
+[GraphFrames Site](https://graphframes.github.io/graphframes/docs/_site/index.html)
+
 [Mining graphs](http://infolab.stanford.edu/~ullman/mmds/ch10.pdf)
 
-<s>[Relative Citation Ratio](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.1002541)</s>
+[Analysis of SIGMOD’s Co-Authorship Graph](http://sigmod.org/publications/sigmodRecord/0309/3.coauthorship.pdf)
 
 [Co-authorship analysis](https://www.digital-science.com/blog/2017/03/connected-culture-collaboration-recognising-understanding-value-research/)
 
-[GraphFrames Site](https://graphframes.github.io/graphframes/docs/_site/index.html)
+<s>[Relative Citation Ratio](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.1002541)</s>
+
+
