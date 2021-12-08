@@ -9,8 +9,6 @@ Take citation and co-authorship graphs as input (but not only!) in order to:
 
 ## Project links:
 
-[GraphFrames presentation](adauga aici un link)
-
 [Project report](https://docs.google.com/document/d/19FschCe1pHffRWKnn23uJAe-SOd_Keku8Zj7bXu7nUY/edit?usp=sharing)
 
 ## Resources links: 
