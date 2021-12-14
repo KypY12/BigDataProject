@@ -38,44 +38,50 @@ if __name__ == '__main__':
     comb_udf = f.udf(get_combinations, udf_res_schema)
 
     authors_e = metadata_df \
-        .withColumn("authors_processed", f.explode(comb_udf(f.col("authors_parsed")))) \
+        .withColumn("authors_processed",
+                    f.explode(comb_udf(f.col("authors_parsed")))) \
         .select(f.col("authors_processed")["author_1"].alias("src"),
                 f.col("authors_processed")["author_2"].alias("dst"),
                 f.col("id").alias("article_id"),
                 f.split(f.col("categories"), " ").alias("article_categories"),
-                f.col("title"),
-                f.col("update_date"))
-
-    # ).alias("a1") \
-    # .join(metadata_df.alias("a2"), f.col("a1.article_id") == f.col("a2.id"), "left")
+                f.col("update_date")) \
+        .groupBy([f.col("src").alias("src"), f.col("dst")]) \
+        .agg(f.count(f.col("article_id")).alias("articles_count"),
+             f.collect_list("article_id").alias("articles_ids"),
+             f.collect_list("article_categories").alias("articles_categories"),
+             f.collect_list("update_date").alias("articles_update_date")) \
+        .orderBy("src", ascending=True)
+    # .orderBy("articles_count", ascending=False)
 
     authors_e.show(20)
 
-    # Edges weights
-    authors_counts = authors_e.groupBy([f.col("src"), f.col("dst")]).count().orderBy("count", ascending=False)
-    authors_counts.show()
+    # Create a Vertex DataFrame with unique ID column "id"
+    authors_v = metadata_df \
+        .select(f.explode(f.col("authors_parsed")).alias("author")) \
+        .select(f.concat_ws(" ", f.col("author")).alias("id")) \
+        .distinct() \
+        .orderBy("author", ascending=True)
+
+    # authors_v.show()
 
     # name = "Berger E. L. "
     # authors_e.where((authors_e["src"] == name) | (authors_e["dst"] == name)).show(100)
-
+    # print(authors_e.where((authors_e["src"] == "Abu-Shammala Wael ") & (authors_e["dst"] == "Torchinsky Alberto "))
+    #       .select(f.col("articles_ids"),
+    #               f.col("articles_categories"),
+    #               f.col("articles_update_date")).collect())
     # authors_e.where(f.col("src") == "Callan David ").show()
     # authors_e.where(f.col("dst") == "Callan David ").show()
+    # authors_v.where(f.col("id") == "Choi Dohoon ").show()
 
     try:
         import graphframes as gf
     except:
-        print("error")
+        print("Couldn't import graphframes package!")
 
-    # Create a Vertex DataFrame with unique ID column "id"
-    authors_v = metadata_df.select(f.explode(f.col("authors_parsed")).alias("author")) \
-        .select(f.concat_ws(" ", f.col("author")).alias("id")).distinct()
-
-    # authors_v.where(f.col("id") == "Pan Hongjun ").show()
-    # authors_v.where(f.col("id") == "Choi Dohoon ").show()
-
-    authors_v.show()
-
-    g = gf.GraphFrame(authors_v, authors_counts)
+    g = gf.GraphFrame(authors_v, authors_e)
+    # PERSIST THE GRAPH !!!
+    g.cache()
 
     g.degrees.where(f.col("id") == "Berger E. L. ").show()
     g.degrees.orderBy("degree", ascending=False).show()
@@ -87,13 +93,3 @@ if __name__ == '__main__':
     #     .option("header", True) \
     #     .mode("overwrite") \
     #     .json("arxiv-processed")
-
-# IF WE USE A BIPARTITE GRAPH
-# authors_e = metadata_df.select(f.explode(f.col("authors_parsed")), *[f.col(c) for c in metadata_df.columns if
-#                                                                       c not in ["authors", "authors_parsed", ""]]) \
-#     .select(f.concat_ws(" ", f.col("col")),
-#             *[f.col(c) for c in metadata_df.columns if c not in ["authors", "authors_parsed", ""]])
-# authors_e = metadata_df.select(f.explode(f.col("authors_parsed")), f.col("id")) \
-#     .select(f.concat_ws(" ", f.col("col")), f.col("id")) \
-#     .toDF("author", "article_id")
-
