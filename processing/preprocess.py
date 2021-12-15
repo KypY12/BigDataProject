@@ -63,9 +63,9 @@ def construct_coauthorship_graph(authors_v, authors_e):
 
 def preprocess_data(metadata_df):
     authors_v, authors_e = construct_e_and_v(metadata_df)
-    graf = construct_coauthorship_graph(authors_v, authors_e)
+    graph = construct_coauthorship_graph(authors_v, authors_e)
 
-    return graf
+    return graph
 
 
 if __name__ == '__main__':
