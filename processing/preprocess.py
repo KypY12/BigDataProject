@@ -68,6 +68,23 @@ def preprocess_data(metadata_df):
     return graph
 
 
+def write_coauthorship_graph(g, path):
+    g.vertices.write \
+        .option("header", True) \
+        .mode("overwrite") \
+        .json(f"{path}/vertices")
+
+    g.edges.write \
+        .option("header", True) \
+        .mode("overwrite") \
+        .json(f"{path}/edges")
+
+
+def read_coauthorship_graph(session, path):
+    return construct_coauthorship_graph(session.read.json(f"{path}/vertices"),
+                                        session.read.json(f"{path}/edges"))
+
+
 if __name__ == '__main__':
     session = SparkSession \
         .builder \
