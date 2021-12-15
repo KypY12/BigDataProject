@@ -1,4 +1,5 @@
 import itertools
+import sys
 
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as f
@@ -48,7 +49,8 @@ def construct_e_and_v(metadata_df):
 
 def construct_coauthorship_graph(authors_v, authors_e):
     try:
-        import graphframes as gf
+        if "graphframes" not in sys.modules:
+            import graphframes as gf
     except:
         print("Couldn't import graphframes package!")
 
@@ -76,7 +78,7 @@ if __name__ == '__main__':
 
     sample_size = 100
 
-    metadata_df = session.read.json("arxiv-metadata-oai-snapshot.json").limit(sample_size)
+    metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
 
     g = preprocess_data(metadata_df)
 
