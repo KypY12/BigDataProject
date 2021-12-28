@@ -1,6 +1,7 @@
 import itertools
 import sys
 
+from pyspark import StorageLevel
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as f
 from pyspark.sql.types import ArrayType, StructType, StructField, StringType
@@ -29,7 +30,7 @@ def construct_e_and_v(metadata_df):
                 f.col("id").alias("article_id"),
                 f.split(f.col("categories"), " ").alias("article_categories"),
                 f.col("update_date")) \
-        .groupBy([f.col("src").alias("src"), f.col("dst")]) \
+        .groupBy([f.col("src"), f.col("dst")]) \
         .agg(f.count(f.col("article_id")).alias("articles_count"),
              f.collect_list("article_id").alias("articles_ids"),
              f.collect_list("article_categories").alias("articles_categories"),
@@ -56,7 +57,8 @@ def construct_coauthorship_graph(authors_v, authors_e):
 
     g = gf.GraphFrame(authors_v, authors_e)
     # PERSIST THE GRAPH !!!
-    g.cache()
+    g.persist()
+    # g.persist(StorageLevel(True, False, False, False, 2))
 
     return g
 
@@ -91,7 +93,7 @@ if __name__ == '__main__':
         .appName("Testing") \
         .getOrCreate()
 
-    session.sparkContext.setCheckpointDir("./checkpoint")
+    session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
 
     sample_size = 100
 

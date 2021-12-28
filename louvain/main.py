@@ -1,96 +1,222 @@
-import itertools
+import pandas as pd
 
+from pyspark import StorageLevel
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as f
-from pyspark.sql.types import ArrayType, StructType, StructField, StringType
+from pyspark.sql.types import LongType
+
+from algorithm.louvain import Louvain
 from processing.preprocess import preprocess_data, write_coauthorship_graph, read_coauthorship_graph
 
 
-class Louvain:
+def testing_first_phase(g):
+    m = g.edges \
+        .where(f.col("src") != f.col("dst")) \
+        .select(f.sum("articles_count").alias("articles_sum")).first()["articles_sum"]
 
-    def __init__(self,
-                 graph,
-                 alg_max_iterations=-1,
-                 fp_max_iterations=-1,
-                 sp_max_iterations=-1):
-        self.alg_max_iterations = alg_max_iterations
-        self.fp_max_iterations = fp_max_iterations
-        self.sp_max_iterations = sp_max_iterations
-        self.graph = graph
+    m = m / 2
 
-    def __first_phase__(self, m):
+    communities = g.vertices.withColumn("community", f.monotonically_increasing_id())
+    communities.show()
 
+    single_node_communities = communities.groupBy(f.col("community")) \
+        .agg(f.count("community").alias("nodes_count")) \
+        .where(f.col("nodes_count") == 1)
 
+    single_node_communities.show()
 
-        pass
+    single_node_communities_edges = single_node_communities \
+        .join(communities.alias("com"), single_node_communities["community"] == communities["community"]) \
+        .select(f.col("com.id"),
+                f.col("com.community"))
 
-    def __second_phase__(self):
-        pass
+    single_node_communities_edges = single_node_communities_edges.alias("snc1") \
+        .join(single_node_communities_edges.alias("snc2"),
+              f.col("snc1.id") == f.col("snc2.id")) \
+        .select(f.col("snc1.id").alias("src"),
+                f.col("snc2.id").alias("dst"),
+                f.col("snc1.community").alias("community_src"),
+                f.col("snc2.community").alias("community_dst"),
+                f.lit(0).alias("articles_count"))
 
-    def execute(self):
-        print("Executing ...")
+    single_node_communities_edges.show()
 
+    comm_aux_df = g.edges.where(f.col("src") != f.col("dst")) \
+        .join(communities, g.edges["dst"] == communities["id"]) \
+        .select(f.col("community").alias("community_dst"),
+                f.col("src"),
+                f.col("dst"),
+                f.col("articles_count"))
+    comm_aux_df = comm_aux_df \
+        .join(communities, comm_aux_df["src"] == communities["id"]) \
+        .select(f.col("community").alias("community_src"),
+                *comm_aux_df.columns)
 
-'''
-Pseudo-code :
+    comm_aux_df = comm_aux_df.unionByName(single_node_communities_edges)
+    comm_aux_df.show()
 
-    First Phase:
-    
-    current_partitions_df = [...]
-    new_partitions_df = []
-    
-    for each node i:
-        k_i = degree of node i
-        
-        D = select node partition
-        k_i_D = compute k_i_D (excluding node i from D)
-        
-        sum_tot_D = compute sum_tot_D (excluding i from D)
-        
-        Cs = select node neighbouring partitions
-        
-        max_delta_Q = -inf
-        max_index = -1
-        for each neigh_part in node_neigh_partitions:
-            k_i_C = compute current k_i_C
-            sum_tot_C = compute current sum_tot_C (excluding i from D)
-            
-            delta_Q = compute delta_Q (final formula)
-            if delta_Q > max_delta_Q:
-                max_delta_Q = delta_Q
-                max_index = -1
-                
-        if max_delta_Q > 0:
-            change partition of node i from D to Cs[max_index]
+    k_i = comm_aux_df \
+        .groupBy(f.col("src").alias("i")) \
+        .agg(f.sum("articles_count").alias("k_i"))
+    k_i.show()
 
-'''
+    k_i_C = comm_aux_df \
+        .groupBy([f.col("src").alias("i"),
+                  f.col("community_dst").alias("C")]) \
+        .agg(f.sum("articles_count").alias("k_i_C"))
+    k_i_C.show()
 
+    # [community_src, community_dst, src, dst, articles_count]
 
+    # comm_aux_df.join(k_i_C, [comm_aux_df["src"] == k_i_C["i"],
+    #                          (comm_aux_df["community_dst"] == k_i_C["C"]) |
+    #                          (comm_aux_df["community_src"] == k_i_C["C"])]).show()
+    #
+    # comm_aux_df.join(k_i_C, [comm_aux_df["src"] == k_i_C["i"],
+    #                          comm_aux_df["community_src"] == k_i_C["C"]]).show()
 
+    # comm_aux_df.join(k_i_C, comm_aux_df["src"] == k_i_C["i"])\
+    #     .where(f.col("community_src") == f.col("C")).show()
 
-if __name__ == '__main__':
-    session = SparkSession \
-        .builder \
-        .appName("Testing") \
-        .getOrCreate()
+    sum_tot_C = comm_aux_df \
+        .groupBy(f.col("community_src").alias("C")) \
+        .agg(f.sum("articles_count").alias("sum_tot_C")).orderBy("sum_tot_C", ascending=False)
+    sum_tot_C.show()
 
-    session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
+    # =================================================================
+    mt = comm_aux_df \
+        .select(f.col("src"),
+                f.col("community_src")) \
+        .distinct() \
+        .alias("mt") \
+        .join(k_i.alias("k_i"),
+              on=f.col("mt.src") == f.col("k_i.i")) \
+        .select(f.col("k_i.i"),
+                f.col("mt.community_src").alias("S_i"),
+                f.col("k_i.k_i")) \
+        .alias("mt") \
+        .join(k_i_C.alias("k_i_S"),
+              on=[f.col("mt.i") == f.col("k_i_S.i"),
+                  f.col("mt.S_i") == f.col("k_i_S.C")]) \
+        .select(f.col("mt.i"),
+                f.col("mt.S_i"),
+                f.col("mt.k_i"),
+                f.col("k_i_S.k_i_C").alias("k_i_S")) \
+        .alias("mt") \
+        .join(k_i_C.alias("k_i_D"),
+              on=f.col("mt.i") == f.col("k_i_D.i")) \
+        .select(f.col("mt.i"),
+                f.col("mt.S_i"),
+                f.col("k_i_D.C").alias("D_i"),
+                f.col("mt.k_i"),
+                f.col("mt.k_i_S"),
+                f.col("k_i_D.k_i_C").alias("k_i_D")) \
+        .alias("mt") \
+        .join(sum_tot_C.alias("sum_tot_S"),
+              on=f.col("mt.S_i") == f.col("sum_tot_S.C")) \
+        .select(f.col("mt.i"),
+                f.col("mt.S_i"),
+                f.col("mt.D_i"),
+                f.col("mt.k_i"),
+                f.col("mt.k_i_S"),
+                f.col("mt.k_i_D"),
+                f.col("sum_tot_S.sum_tot_C").alias("sum_tot_S")) \
+        .alias("mt") \
+        .join(sum_tot_C.alias("sum_tot_D"),
+              on=f.col("mt.D_i") == f.col("sum_tot_D.C")) \
+        .select(f.col("mt.i"),
+                f.col("mt.S_i"),
+                f.col("mt.D_i"),
+                f.col("mt.k_i"),
+                f.col("mt.k_i_S"),
+                f.col("mt.k_i_D"),
+                f.col("mt.sum_tot_S"),
+                f.col("sum_tot_D.sum_tot_C").alias("sum_tot_D"))
 
-    # sample_size = 100
-    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
-    # g = preprocess_data(metadata_df)
-    # write_coauthorship_graph(g, "../data/authors_graph")
-    g = read_coauthorship_graph(session, "../data/authors_graph")
+    # | i | S_i | D_i | k_i | k_i_S | k_i_D | sum_tot_S | sum_tot_D |
+    mt.show()
 
+    two_m = 2 * m
+    two_m_sq = two_m ** 2
 
-    # g.vertices.show()
-    # g.edges.show()
+    mc = mt.withColumn("delta_Q",
+                       (f.col("k_i_D") - f.col("k_i_S")) / two_m + f.col("k_i") *
+                       (2 * (f.col("sum_tot_S") - f.col("sum_tot_D")) - f.col(
+                           "k_i")) / two_m_sq)
+    mc.show()
 
-    g.vertices.withColumn("community", f.monotonically_increasing_id()).show()
+    positive_max_mc = mc \
+        .groupBy("i") \
+        .agg(f.max("delta_Q").alias("max_delta_Q")) \
+        .where(f.col("max_delta_Q") > 0)
 
+    positive_max_mc.show()
 
+    positive_max_mc = positive_max_mc.alias("pmmc") \
+        .join(mc.alias("mc"),
+              [f.col("pmmc.i") == f.col("mc.i"),
+               f.col("pmmc.max_delta_Q") == f.col("mc.delta_Q")]) \
+        .select(f.col("pmmc.i"),
+                f.col("mc.D_i"),
+                f.col("pmmc.max_delta_Q")) \
+        .dropDuplicates(["i", "max_delta_Q"])
 
-    # louvain_com_det = Louvain()
+    positive_max_mc.show()
+
+    updated_communities_df = communities.alias("comm") \
+        .join(positive_max_mc.alias("pmmc"),
+              f.col("comm.id") == f.col("pmmc.i"),
+              how="left")
+
+    updated_communities_df.orderBy("id").show()
+
+    updated_communities_df = updated_communities_df.alias("ucd") \
+        .join(single_node_communities.alias("snc"),
+              f.col("ucd.community") == f.col("snc.community"),
+              how="left") \
+        .select(f.col("ucd.id"),
+                f.col("ucd.community"),
+                f.col("ucd.i"),
+                f.col("ucd.D_i"),
+                f.col("ucd.max_delta_Q"),
+                f.col("snc.nodes_count").alias("is_old_comm_single")
+                ) \
+        .alias("ucd") \
+        .join(single_node_communities.alias("snc"),
+              f.col("ucd.D_i") == f.col("snc.community"),
+              how="left") \
+        .select(f.col("ucd.id"),
+                f.col("ucd.community"),
+                f.col("ucd.i"),
+                f.when((f.col("ucd.is_old_comm_single") == 1) &
+                       (f.col("snc.nodes_count") == 1) &
+                       (f.col("ucd.community") < f.col("ucd.D_i")), None)
+                .otherwise(f.col("ucd.D_i")).alias("D_i"),
+                f.col("ucd.max_delta_Q"))
+
+    updated_communities_df.show(20)
+
+    updated_communities_df = updated_communities_df \
+        .select(f.col("id"),
+                f.when(f.col("D_i").isNotNull(), f.col("D_i"))
+                .otherwise(f.col("community")).alias("community")) \
+        .orderBy("community")
+
+    updated_communities_df.show(210)
+
+    print(communities.count())
+    print(updated_communities_df.select("id").distinct().count())
+
+    # node_k_i_C = k_i_C.where(f.col("i") == "Stroeer Alexander ")
+    # node_k_i_C.show()
+    #
+    # elements = list(node_k_i_C.select('C').toPandas()['C'])
+    # print(elements)
+    #
+    # sth = sum_tot_C.where(f.col("C").isin(elements))
+    # sth.show()
+
+    # k_i_S = node_k_i_C.where(f.col("C") == node_community).select("C").toPandas()
 
     # metadata_df.printSchema()
     # metadata_df.show(20)
@@ -106,3 +232,37 @@ if __name__ == '__main__':
     #     .option("header", True) \
     #     .mode("overwrite") \
     #     .json("arxiv-processed")
+
+
+if __name__ == '__main__':
+    session = SparkSession \
+        .builder \
+        .appName("Testing") \
+        .getOrCreate()
+
+    session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
+
+    # sample_size = 100
+    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
+    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(1_000_000)
+    # metadata_df.show(20)
+    # g = preprocess_data(metadata_df)
+
+    # write_coauthorship_graph(g, "../data/authors_graph")
+
+    g = read_coauthorship_graph(session, "../data/authors_graph")
+    # g.edges.persist(StorageLevel(True, False, False, False, 2))
+    # print(metadata_df.count())
+    # print(g.vertices.count())
+    # print(g.edges.count())
+
+    # g.vertices.show()
+    # g.edges.orderBy("articles_count", ascending=False).show()
+
+    louvain_alg = Louvain(g)
+
+    louvain_alg.execute()
+    #
+    # testing_first_phase(g)
+
+    g.unpersist()
