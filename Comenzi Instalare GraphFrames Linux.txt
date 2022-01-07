@@ -19,6 +19,7 @@ export SPARK_HOME=/usr/local/spark
 export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
 export PYSPARK_PYTHON=/usr/bin/python3.6
 export PYSPARK_SUBMIT_ARGS="--packages graphframes:graphframes:0.8.2-spark3.2-s_2.12 pyspark-shell"
+export PYTHONPATH=/home/ubuntu/BigDataProject
 
 source ~/.profile
 cat ~/.profile
@@ -29,6 +30,7 @@ export SPARK_HOME=/usr/local/spark
 export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
 export PYSPARK_PYTHON=/usr/bin/python3.6
 export PYSPARK_SUBMIT_ARGS="--packages graphframes:graphframes:0.8.2-spark3.2-s_2.12 pyspark-shell"
+export PYTHONPATH=/home/ubuntu/BigDataProject
 
 source ~/.bashrc
 cat ~/.bashrc
@@ -38,6 +40,18 @@ ssh ubuntu@192.168.254.187 (passphrase: pass)
 printenv
 
 cd /home/ubuntu/BigDataProject
+
+cd ~
+pip3 install --user kaggle
+cd .kaggle/
+ls -al
+nano kaggle.json
+cat kaggle.json
+
+kaggle datasets list -s arxiv
+cd BigDataProject/
+kaggle datasets download -d Cornell-University/arxiv
+
 
 
 ########################################################################################################################
