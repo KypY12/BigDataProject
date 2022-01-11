@@ -1,3 +1,62 @@
+# Comenzi folosite pe instanta
+
+python3 --version
+java -version
+scala -version
+pyspark --version
+
+pyspark --packages graphframes:graphframes:0.8.2-spark3.2-s_2.12
+ls -al /home/ubuntu/.ivy2/jars
+cd /usr/local/spark/jars/
+cp /home/ubuntu/.ivy2/jars/* .
+ls -al
+
+cd ~
+ls -al
+sudo nano ~/.profile
+
+export SPARK_HOME=/usr/local/spark
+export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
+export PYSPARK_PYTHON=/usr/bin/python3.6
+export PYSPARK_SUBMIT_ARGS="--packages graphframes:graphframes:0.8.2-spark3.2-s_2.12 pyspark-shell"
+export PYTHONPATH=/home/ubuntu/BigDataProject
+
+source ~/.profile
+cat ~/.profile
+
+sudo nano ~/.bashrc
+
+export SPARK_HOME=/usr/local/spark
+export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
+export PYSPARK_PYTHON=/usr/bin/python3.6
+export PYSPARK_SUBMIT_ARGS="--packages graphframes:graphframes:0.8.2-spark3.2-s_2.12 pyspark-shell"
+export PYTHONPATH=/home/ubuntu/BigDataProject
+
+source ~/.bashrc
+cat ~/.bashrc
+
+ctrl+d
+ssh ubuntu@192.168.254.187 (passphrase: pass)
+printenv
+
+cd /home/ubuntu/BigDataProject
+
+cd ~
+pip3 install --user kaggle
+cd .kaggle/
+ls -al
+nano kaggle.json
+cat kaggle.json
+
+kaggle datasets list -s arxiv
+cd BigDataProject/
+kaggle datasets download -d Cornell-University/arxiv
+
+
+
+########################################################################################################################
+# Comenzi instalare pe Linux personal
+
 # Instalare python 3
 
     # Verificare Versiune Python
@@ -23,6 +82,9 @@ sudo mv spark-3.2.0-bin-hadoop3.2 /opt/spark
 
 pip3 install --user py4j
 
+
+pyspark --version
+
 # Verificare
 
 pyspark --packages graphframes:graphframes:0.8.2-spark3.2-s_2.12
@@ -47,10 +109,6 @@ export SPARK_HOME=/opt/spark
 export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
 export PYSPARK_PYTHON=/usr/bin/python3.6
 export PYSPARK_SUBMIT_ARGS="--packages graphframes:graphframes:0.8.2-spark3.2-s_2.12 pyspark-shell"
-
-
-
-
 
 
 spark-submit -version
