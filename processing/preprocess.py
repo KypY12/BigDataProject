@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
     sample_size = 100
 
-    metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
+    metadata_df = session.read.json("../data/original").limit(sample_size)
 
     metadata_df.select(f.col("id"),
                        "submitter",
