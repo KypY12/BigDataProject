@@ -136,7 +136,7 @@ def read_coauthorship_graph(session, path):
 if __name__ == '__main__':
     session = SparkSession \
         .builder \
-        .appName("Testing") \
+        .appName("Preprocessing Main") \
         .getOrCreate()
         # .config("spark.driver.memory", "32g") \
 
