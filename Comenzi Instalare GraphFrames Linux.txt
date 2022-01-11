@@ -1,5 +1,12 @@
 # Comenzi folosite pe instanta
 
+start-all.sh
+cd stacks
+ls -al
+arm-env.sh
+
+jps
+
 python3 --version
 java -version
 scala -version
@@ -39,10 +46,14 @@ ctrl+d
 ssh ubuntu@192.168.254.187 (passphrase: pass)
 printenv
 
-cd /home/ubuntu/BigDataProject
+cd ~
+git clone https://github.com/KypY12/BigDataProject.git
+cd BigDataProject
+ls -al
 
 cd ~
 pip3 install --user kaggle
+kaggle
 cd .kaggle/
 ls -al
 nano kaggle.json
@@ -52,6 +63,21 @@ kaggle datasets list -s arxiv
 cd BigDataProject/
 kaggle datasets download -d Cornell-University/arxiv
 
+unzip arxiv.zip
+ls -al
+
+hadoop fs -ls /
+hadoop fs -mkdir -p /user/data/original
+hadoop fs -ls /user/data/
+hadoop fs -put arxiv-metadata-oai-snapshot.json /user/data/original/arxiv-metadata-oai-snapshot.json
+hadoop fs -ls /user/data/original
+
+pip3 install --user pandas
+pip3 install --user pyspark
+
+cd processing
+ls -al
+python3 preprocess.py
 
 
 ########################################################################################################################
