@@ -137,7 +137,7 @@ if __name__ == '__main__':
     session = SparkSession \
         .builder \
         .appName("Testing") \
-        .config("spark.driver.memory", "15g") \
+        .config("spark.driver.memory", "32g") \
         .getOrCreate()
 
     session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
