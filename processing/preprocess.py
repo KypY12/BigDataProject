@@ -99,10 +99,14 @@ if __name__ == '__main__':
 
     metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
 
-    g = preprocess_data(metadata_df)
+    metadata_df.select(f.col("id"),
+                       "submitter",
+                       "versions").show()
 
-    g.vertices.show()
-    g.edges.show()
+    # g = preprocess_data(metadata_df)
+
+    # g.vertices.show()
+    # g.edges.show()
 
     # metadata_df.printSchema()
     # metadata_df.show(20)
