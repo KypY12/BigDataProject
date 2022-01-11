@@ -107,7 +107,7 @@ if __name__ == '__main__':
     g = preprocess_data(metadata_df)
 
     g.vertices.show()
-    g.edges.show()
+    # g.edges.show()
 
     # metadata_df.printSchema()
     # metadata_df.show(20)
