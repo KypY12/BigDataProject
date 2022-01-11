@@ -24,12 +24,15 @@ def construct_e_and_v(metadata_df):
 
     authors_e = metadata_df \
         .withColumn("authors_processed",
-                    f.explode(comb_udf(f.col("authors_parsed")))) \
-        .select(f.col("authors_processed")["author_1"].alias("src"),
-                f.col("authors_processed")["author_2"].alias("dst"),
-                f.col("id").alias("article_id"),
-                f.split(f.col("categories"), " ").alias("article_categories"),
-                f.col("update_date")) \
+                    f.explode(comb_udf(f.col("authors_parsed"))))
+
+    authors_e = authors_e.checkpoint()
+
+    authors_e = authors_e.select(f.col("authors_processed")["author_1"].alias("src"),
+                                 f.col("authors_processed")["author_2"].alias("dst"),
+                                 f.col("id").alias("article_id"),
+                                 f.split(f.col("categories"), " ").alias("article_categories"),
+                                 f.col("update_date")) \
         .groupBy([f.col("src"), f.col("dst")]) \
         .agg(f.count(f.col("article_id")).alias("articles_count"),
              f.collect_list("article_id").alias("articles_ids"),
@@ -107,9 +110,10 @@ if __name__ == '__main__':
     g = preprocess_data(metadata_df)
 
     g.vertices.show()
-    # g.edges.show()
+    g.edges.show()
 
-    print(f"Count : {g.vertices.count()}")
+    print(f"Vertx Count : {g.vertices.count()}")
+    print(f"Edge Count : {g.edges.count()}")
 
     # metadata_df.printSchema()
     # metadata_df.show(20)
