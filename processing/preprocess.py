@@ -109,6 +109,8 @@ if __name__ == '__main__':
     g.vertices.show()
     # g.edges.show()
 
+    g.vertices.count()
+
     # metadata_df.printSchema()
     # metadata_df.show(20)
     # print(metadata_df.rdd.getNumPartitions())
