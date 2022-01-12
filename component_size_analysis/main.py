@@ -10,7 +10,6 @@ from pyspark.sql.types import LongType
 
 from processing.preprocess import preprocess_data, write_coauthorship_graph, read_coauthorship_graph
 
-
 if __name__ == '__main__':
     session = SparkSession \
         .builder \
@@ -19,30 +18,31 @@ if __name__ == '__main__':
 
     session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
 
-    sample_size = 500 #15
-    metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
+    # sample_size = 500 #15
+    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
     ##metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(1_000_000)
-    #metadata_df.show(20)
-    g = preprocess_data(metadata_df)
-    #
-    #write_coauthorship_graph(g, "../data/authors_graph")
+    # metadata_df.show(20)
+    # g = preprocess_data(metadata_df)
 
-    #g = read_coauthorship_graph(session, "../data/authors_graph")
+    # write_coauthorship_graph(g, "../data")
+
+    g = read_coauthorship_graph(session, "../data")
 
     # g.edges.persist(StorageLevel(True, False, False, False, 2))
     # print(metadata_df.count())
     # print(g.vertices.count())
     # print(g.edges.count())
 
-    #g.vertices.show()
-    #g.edges.orderBy("articles_count", ascending=False).show()
+    # g.vertices.show()
+    # g.edges.orderBy("articles_count", ascending=False).show()
 
-    #g.unpersist()
+    # g.unpersist()
 
-    components = g.labelPropagation(maxIter=10).withColumnRenamed("id", "author").withColumnRenamed("label", "id_component")
+    components = g.labelPropagation(maxIter=10).withColumnRenamed("id", "author").withColumnRenamed("label",
+                                                                                                    "id_component")
 
-    #components = g.connectedComponents().withColumnRenamed("id", "author").withColumnRenamed("component", "id_component")   # .orderBy("component").show()
+    # components = g.connectedComponents().withColumnRenamed("id", "author").withColumnRenamed("component", "id_component")   # .orderBy("component").show()
 
     components.show(5)
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     components.select(f.col("id_component")).distinct().show()
 
     # Get the number of nodes in all the components
-    components\
+    components \
         .groupBy(f.col("id_component")) \
         .count() \
         .orderBy("count", ascending=False) \
@@ -62,11 +62,11 @@ if __name__ == '__main__':
 
     # Get the number of authors(nodes) and their name in all the components
     grouped_authors_by_component = components \
-                                    .groupBy(f.col("id_component")) \
-                                    .agg(f.count(f.col("author")).alias("authors_count"),
-                                         f.collect_list("author").alias("authors")) \
-                                    .orderBy("authors_count", ascending=False) \
-
+        .groupBy(f.col("id_component")) \
+        .agg(f.count(f.col("author")).alias("authors_count"),
+             f.collect_list("author").alias("authors")) \
+        .orderBy("authors_count", ascending=False) \
+ \
     grouped_authors_by_component.show()  # (truncate=False)
 
     current_graph = g
@@ -79,18 +79,18 @@ if __name__ == '__main__':
     print(W)
 
     # Get the biggest connected component
-    id_first_component = components\
-                            .groupBy(f.col("id_component")) \
-                            .count() \
-                            .orderBy("count", ascending=False) \
-                            .first()["id_component"]
+    id_first_component = components \
+        .groupBy(f.col("id_component")) \
+        .count() \
+        .orderBy("count", ascending=False) \
+        .first()["id_component"]
 
     print(id_first_component)
 
     # Get the authors of the biggest connected component
     authors_first_component = components \
-                                .where(f.col("id_component") == id_first_component) \
-                                .select(f.col("author"))
+        .where(f.col("id_component") == id_first_component) \
+        .select(f.col("author"))
     authors_first_component.show()
 
     # Creates graph that joins the authors with the connected components
@@ -102,9 +102,9 @@ if __name__ == '__main__':
 
     # Compute S_c to the first connected component
     S_c = components_data \
-            .where(f.col("author/src") != f.col("dst")) \
-            .where(f.col("id_component") == id_first_component) \
-            .select(f.sum("articles_count").alias("articles_sum")).first()["articles_sum"]
+        .where(f.col("author/src") != f.col("dst")) \
+        .where(f.col("id_component") == id_first_component) \
+        .select(f.sum("articles_count").alias("articles_sum")).first()["articles_sum"]
 
     S_c /= 2
     print(S_c)
@@ -130,7 +130,8 @@ if __name__ == '__main__':
 
     # Creates graph that joins the authors lists with the connected components and authors
     close_components_data = components_data \
-        .join(grouped_authors_by_component, components_data["id_component"] == grouped_authors_by_component["id_component"]) \
+        .join(grouped_authors_by_component,
+              components_data["id_component"] == grouped_authors_by_component["id_component"]) \
         .select(components_data["id_component"], f.col("author/src"), f.col("dst"), f.col("articles_count")) \
         .where(f.array_contains(f.col("authors"), f.col("dst")))
 
@@ -149,22 +150,16 @@ if __name__ == '__main__':
     print(Q)
 
     modularity_components = sum_weights_between_nodes_in_component \
-        .join(sum_weights_all_nodes_in_components, sum_weights_between_nodes_in_component["id_component"] == sum_weights_all_nodes_in_components["id_component"]) \
+        .join(sum_weights_all_nodes_in_components,
+              sum_weights_between_nodes_in_component["id_component"] == sum_weights_all_nodes_in_components[
+                  "id_component"]) \
         .select(sum_weights_between_nodes_in_component["id_component"],
-                (f.col("articles_count_in_component") / W - (f.col("articles_count_of_component") / (2 * W)) ** 2).alias("modularity_value")) \
+                (f.col("articles_count_in_component") / W - (
+                            f.col("articles_count_of_component") / (2 * W)) ** 2).alias("modularity_value")) \
         .orderBy("modularity_value", ascending=False)
 
     modularity_components.show()
 
     modularity = modularity_components \
-                    .select(f.sum(f.col("modularity_value")))
+        .select(f.sum(f.col("modularity_value")))
     modularity.show()
-
-
-
-
-
-
-
-
-
