@@ -50,54 +50,54 @@ class Louvain:
             .agg(f.count("community").alias("nodes_count")) \
             .where(f.col("nodes_count") == 1)
 
-        single_node_communities.show()
+        single_node_communities = single_node_communities.persist()
 
+        # print("SINGLE nodes COMM FUNCS")
+        # print(single_node_communities.count())
+        # single_node_communities.show()
+
+        single_node_communities_edges = single_node_communities \
+            .join(current_communities.alias("com"),
+                  single_node_communities["community"] == current_communities["community"]) \
+            .select(f.col("com.id"),
+                    f.col("com.community"))
+
+        single_node_communities_edges = single_node_communities_edges.alias("snc1") \
+            .join(single_node_communities_edges.alias("snc2"),
+                  f.col("snc1.id") == f.col("snc2.id")) \
+            .select(f.col("snc1.id").alias("src"),
+                    f.col("snc2.id").alias("dst"),
+                    f.col("snc1.community").alias("community_src"),
+                    f.col("snc2.community").alias("community_dst"),
+                    f.lit(0).alias("articles_count"))
+
+        # print("SINGLE edges COMM FUNCS")
+        # print(single_node_communities_edges.count())
+        # single_node_communities_edges.show()
+
+        # Construct an auxiliary table : [community_src, community_dst, src, dst, articles_count]
+        comm_aux_df = current_graph.edges \
+            .where(f.col("src") != f.col("dst")) \
+            .join(current_communities, current_graph.edges["dst"] == current_communities["id"]) \
+            .select(f.col("community").alias("community_dst"),
+                    f.col("src"),
+                    f.col("dst"),
+                    f.col("articles_count"))
+        comm_aux_df = comm_aux_df \
+            .join(current_communities, comm_aux_df["src"] == current_communities["id"]) \
+            .select(f.col("community").alias("community_src"),
+                    *comm_aux_df.columns)
+
+        # print("AUX COMM FUNCS1")
+        comm_aux_df = comm_aux_df.unionByName(single_node_communities_edges)
+        # print("AUX COMM FUNCS2")
+
+        single_node_communities_edges.unpersist()
+
+        comm_aux_df.show()
+        print(f"COM AUX DF : {comm_aux_df.count()}")
         mt = None
-        # single_node_communities = single_node_communities.persist()
-        #
-        # # print("SINGLE nodes COMM FUNCS")
-        # # print(single_node_communities.count())
-        # # single_node_communities.show()
-        #
-        # single_node_communities_edges = single_node_communities \
-        #     .join(current_communities.alias("com"),
-        #           single_node_communities["community"] == current_communities["community"]) \
-        #     .select(f.col("com.id"),
-        #             f.col("com.community"))
-        #
-        # single_node_communities_edges = single_node_communities_edges.alias("snc1") \
-        #     .join(single_node_communities_edges.alias("snc2"),
-        #           f.col("snc1.id") == f.col("snc2.id")) \
-        #     .select(f.col("snc1.id").alias("src"),
-        #             f.col("snc2.id").alias("dst"),
-        #             f.col("snc1.community").alias("community_src"),
-        #             f.col("snc2.community").alias("community_dst"),
-        #             f.lit(0).alias("articles_count"))
-        #
-        # # print("SINGLE edges COMM FUNCS")
-        # # print(single_node_communities_edges.count())
-        # # single_node_communities_edges.show()
-        #
-        # # Construct an auxiliary table : [community_src, community_dst, src, dst, articles_count]
-        # comm_aux_df = current_graph.edges \
-        #     .where(f.col("src") != f.col("dst")) \
-        #     .join(current_communities, current_graph.edges["dst"] == current_communities["id"]) \
-        #     .select(f.col("community").alias("community_dst"),
-        #             f.col("src"),
-        #             f.col("dst"),
-        #             f.col("articles_count"))
-        # comm_aux_df = comm_aux_df \
-        #     .join(current_communities, comm_aux_df["src"] == current_communities["id"]) \
-        #     .select(f.col("community").alias("community_src"),
-        #             *comm_aux_df.columns)
-        #
-        # # print("AUX COMM FUNCS1")
-        # comm_aux_df = comm_aux_df.unionByName(single_node_communities_edges)
-        # # print("AUX COMM FUNCS2")
-        #
-        # single_node_communities_edges.unpersist()
-        #
-        # # comm_aux_df = comm_aux_df.persist()
+        # comm_aux_df = comm_aux_df.persist()
         #
         # # Compute all k_i (i is considered here the src node)
         # # Needs to be computed once (each iteration's update doesn't change the values in this dataframe)
@@ -300,43 +300,41 @@ class Louvain:
         current_communities = current_graph.vertices.withColumn("community", f.monotonically_increasing_id())
         current_communities = current_communities.persist()
 
-        self.__fp_iteration__(current_graph, current_communities, two_m, two_m_sq)
+        if self.fp_max_iterations == -1:
 
-        # if self.fp_max_iterations == -1:
-        #
-        #     iteration = 0
-        #     while current_communities:
-        #
-        #         start = time.perf_counter()
-        #
-        #         current_communities = self.__fp_iteration__(current_graph, current_communities, two_m, two_m_sq)
-        #         if current_communities:
-        #             current_communities = current_communities.checkpoint()
-        #
-        #         finish = time.perf_counter()
-        #
-        #         print(f"First phase - iteration {iteration} -- {finish - start} seconds")
-        #         iteration += 1
-        #
-        # else:
-        #
-        #     for iteration in range(self.fp_max_iterations):
-        #
-        #         start = time.perf_counter()
-        #
-        #         current_communities = self.__fp_iteration__(current_graph, current_communities, two_m, two_m_sq)
-        #         if current_communities:
-        #             current_communities = current_communities.checkpoint()
-        #
-        #         finish = time.perf_counter()
-        #
-        #         print(f"First phase - iteration {iteration} -- {finish - start} seconds")
-        #
-        #         if current_communities is None:
-        #             break
-        #
-        # self.k_i.unpersist()
-        # self.k_i = None
+            iteration = 0
+            while current_communities:
+
+                start = time.perf_counter()
+
+                current_communities = self.__fp_iteration__(current_graph, current_communities, two_m, two_m_sq)
+                if current_communities:
+                    current_communities = current_communities.checkpoint()
+
+                finish = time.perf_counter()
+
+                print(f"First phase - iteration {iteration} -- {finish - start} seconds")
+                iteration += 1
+
+        else:
+
+            for iteration in range(self.fp_max_iterations):
+
+                start = time.perf_counter()
+
+                current_communities = self.__fp_iteration__(current_graph, current_communities, two_m, two_m_sq)
+                if current_communities:
+                    current_communities = current_communities.checkpoint()
+
+                finish = time.perf_counter()
+
+                print(f"First phase - iteration {iteration} -- {finish - start} seconds")
+
+                if current_communities is None:
+                    break
+
+        self.k_i.unpersist()
+        self.k_i = None
 
     def __second_phase__(self, current_graph):
         print("Executing second phase ...")
