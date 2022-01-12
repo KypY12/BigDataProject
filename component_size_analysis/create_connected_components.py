@@ -12,22 +12,25 @@ if __name__ == '__main__':
         .getOrCreate()
 
     session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
-    g = read_coauthorship_graph(session, "../data")
 
-    g.vertices.show()
-    g.edges.show()
+    # g = read_coauthorship_graph(session, "../data")
+    #
+    # g.vertices.show()
+    # g.edges.show()
+    #
+    # print(f"Vertx Count : {g.vertices.count()}")
+    # print(f"Edge Count : {g.edges.count()}")
+    #
+    # components = g.connectedComponents()
+    #
+    # components.show()
+    #
+    # components.write \
+    #     .option("header", True) \
+    #     .mode("overwrite") \
+    #     .parquet("../data/connected_components")
 
-    print(f"Vertx Count : {g.vertices.count()}")
-    print(f"Edge Count : {g.edges.count()}")
-
-    components = g.connectedComponents()
-
-    components.show()
-
-    components.write \
-        .option("header", True) \
-        .mode("overwrite") \
-        .parquet("../data/connected_components")
+    components = session.read.parquet("../data/connected_components")
 
     print("Connected components : ", components.groupBy(f.col("component")).agg(f.col("component")).count())
 
