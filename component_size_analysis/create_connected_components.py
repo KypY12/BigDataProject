@@ -32,6 +32,13 @@ if __name__ == '__main__':
 
     components = session.read.parquet("../data/connected_components")
 
+    components_counts = components\
+        .groupBy(f.col("component"))\
+        .count() \
+        .orderBy(f.col("count"), ascending=False)
+
+    components_counts.show()
+
     print("Connected components : ", components.groupBy(f.col("component")).agg(f.col("component")).count())
 
     print("Max connected component size : ", components.groupBy(f.col("component")).count().agg(f.max("count")).collect())
