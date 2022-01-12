@@ -45,9 +45,10 @@ if __name__ == '__main__':
     # components = g.labelPropagation(maxIter=10).withColumnRenamed("id", "author").withColumnRenamed("label",
     #                                                                                                 "id_component")
 
-    components = g.connectedComponents().withColumnRenamed("id", "author").withColumnRenamed("component", "id_component")   # .orderBy("component").show()
+    components = g.connectedComponents()
+        # .withColumnRenamed("id", "author").withColumnRenamed("component", "id_component")   # .orderBy("component").show()
 
-    components.show(5)
+    components.show()
 
     sys.exit()
     # Get number of all components
