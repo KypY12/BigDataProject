@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
     component_subgraph = get_saved_connected_component_subgraph(session, 1)
 
-    component_subgraph..show()
+    component_subgraph.vertices.show()
     component_subgraph.edges.show()
     print(f"Component vertices : {component_subgraph.vertices.count()}")
     print(f"Component edges : {component_subgraph.vertices.count()}")
