@@ -3,8 +3,6 @@ import sys
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as f
 
-from globals.globals import *
-
 
 def construct_e_and_v(metadata_df):
     authors_relations = metadata_df \
@@ -97,16 +95,13 @@ if __name__ == '__main__':
     session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
 
     # sample_size = 100
-    # metadata_df = session.read.json(LOCAL_DATA_PATH).limit(sample_size)
-    # metadata_df = session.read.json(LOCAL_DATA_PATH)
-    metadata_df = session.read.json(CLUSTER_DATA_PATH)
+    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
+    metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
 
     g = preprocess_data(metadata_df)
-    # write_coauthorship_graph(g, LOCAL_WRITE_AUTHORS_PATH)
-    write_coauthorship_graph(g, CLUSTER_WRITE_AUTHORS_PATH)
+    write_coauthorship_graph(g, "../data/authors_graph")
 
-    # g = read_coauthorship_graph(session, LOCAL_WRITE_AUTHORS_PATH)
-    # g = read_coauthorship_graph(session, CLUSTER_WRITE_AUTHORS_PATH)
+    # g = read_coauthorship_graph(session, "../data/authors_graph")
 
     g.vertices.show()
     g.edges.show()
