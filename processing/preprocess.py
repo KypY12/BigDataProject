@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
     session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
 
-    sample_size = 100_000
+    sample_size = 1_000_000
     metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
 
