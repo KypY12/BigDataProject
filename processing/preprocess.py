@@ -99,7 +99,7 @@ if __name__ == '__main__':
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
 
     g = preprocess_data(metadata_df)
-    write_coauthorship_graph(g, "../data/authors_graph")
+    # write_coauthorship_graph(g, "../data/authors_graph")
 
     # g = read_coauthorship_graph(session, "../data/authors_graph")
 
