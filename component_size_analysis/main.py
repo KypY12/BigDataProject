@@ -1,3 +1,5 @@
+import sys
+
 import pandas as pd
 import copy
 
@@ -44,6 +46,7 @@ if __name__ == '__main__':
 
     components.show(5)
 
+    sys.exit()
     # Get number of all components
     components.select(f.approx_count_distinct("id_component").alias("Number of connected components")).show()
 
