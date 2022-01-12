@@ -42,16 +42,16 @@ def construct_e_and_v(metadata_df):
     #     .orderBy("src", ascending=True)
     # # .orderBy("articles_count", ascending=False)
 
-    authors_e = metadata_df \
+    authors_relations = metadata_df \
         .withColumn("authors_processed",
                     f.explode(f.col("authors_parsed"))) \
         .select(*metadata_df.columns,
                 f.array_join(f.col("authors_processed"), delimiter=" ").alias("author_name"))
 
-    # authors_e.persist()
+    # authors_relations.persist()
 
-    authors_e = authors_e.alias("left") \
-        .join(authors_e.alias("right"),
+    authors_relations = authors_relations.alias("left") \
+        .join(authors_relations.alias("right"),
               f.col("left.id") == f.col("right.id")) \
         .select(f.col("left.author_name").alias("src"),
                 f.col("right.author_name").alias("dst"),
@@ -60,9 +60,10 @@ def construct_e_and_v(metadata_df):
                 f.col("left.update_date")) \
         .where(f.col("src") != f.col("dst"))
 
-    # authors_e = authors_e.checkpoint()
+    # authors_relations = authors_e.checkpoint()
+    authors_relations.persist()
 
-    authors_e = authors_e \
+    authors_e = authors_relations \
         .groupBy([f.col("src"), f.col("dst")]) \
         .agg(f.count(f.col("article_id")).alias("articles_count"))
     #         f.collect_list("article_id").alias("articles_ids"),
@@ -72,12 +73,12 @@ def construct_e_and_v(metadata_df):
     #     # .orderBy("src", ascending=True)
     # # .orderBy("articles_count", ascending=False)
 
-    authors_e_articles_ids = authors_e \
-        .groupBy([f.col("src"), f.col("dst")]) \
-        .agg(f.collect_list("article_id").alias("articles_ids"))
-
-    authors_e_articles_ids.show()
-    print("ARTICLES IDS : ", authors_e_articles_ids.count())
+    # authors_e_articles_ids = authors_relations \
+    #     .groupBy([f.col("src"), f.col("dst")]) \
+    #     .agg(f.collect_list("article_id").alias("articles_ids"))
+    #
+    # authors_e_articles_ids.show()
+    # print("ARTICLES IDS : ", authors_e_articles_ids.count())
 
     # Create a Vertex DataFrame with unique ID column "id"
     authors_v = metadata_df \
