@@ -7,7 +7,6 @@ from pyspark.sql.types import StructType
 
 
 class Louvain:
-
     class CurrentGraph:
 
         def __init__(self, vertices, edges):
@@ -123,13 +122,23 @@ class Louvain:
             .select(f.col("src"),
                     f.col("community_src")) \
             .distinct() \
-            .alias("mt") \
+            .alias("mt")
+
+        mt.show(30)
+        print("MT 1: ", mt.count())
+
+        mt = mt \
             .join(self.k_i.alias("k_i"),
                   on=f.col("mt.src") == f.col("k_i.i")) \
             .select(f.col("k_i.i"),
                     f.col("mt.community_src").alias("S_i"),
                     f.col("k_i.k_i")) \
-            .alias("mt") \
+            .alias("mt")
+
+        mt.show(30)
+        print("MT 2: ", mt.count())
+
+        mt = mt \
             .join(k_i_C.alias("k_i_S"),
                   on=[f.col("mt.i") == f.col("k_i_S.i"),
                       f.col("mt.S_i") == f.col("k_i_S.C")]) \
@@ -137,7 +146,12 @@ class Louvain:
                     f.col("mt.S_i"),
                     f.col("mt.k_i"),
                     f.col("k_i_S.k_i_C").alias("k_i_S")) \
-            .alias("mt") \
+            .alias("mt")
+
+        mt.show(30)
+        print("MT 3: ", mt.count())
+
+        mt = mt \
             .join(k_i_C.alias("k_i_D"),
                   on=f.col("mt.i") == f.col("k_i_D.i")) \
             .select(f.col("mt.i"),
@@ -146,7 +160,12 @@ class Louvain:
                     f.col("mt.k_i"),
                     f.col("mt.k_i_S"),
                     f.col("k_i_D.k_i_C").alias("k_i_D")) \
-            .alias("mt") \
+            .alias("mt")
+
+        mt.show(30)
+        print("MT 4: ", mt.count())
+
+        mt = mt \
             .join(sum_tot_C.alias("sum_tot_S"),
                   on=f.col("mt.S_i") == f.col("sum_tot_S.C")) \
             .select(f.col("mt.i"),
@@ -156,7 +175,12 @@ class Louvain:
                     f.col("mt.k_i_S"),
                     f.col("mt.k_i_D"),
                     f.col("sum_tot_S.sum_tot_C").alias("sum_tot_S")) \
-            .alias("mt") \
+            .alias("mt")
+
+        mt.show(30)
+        print("MT 5: ", mt.count())
+
+        mt = mt \
             .join(sum_tot_C.alias("sum_tot_D"),
                   on=f.col("mt.D_i") == f.col("sum_tot_D.C")) \
             .select(f.col("mt.i"),
@@ -167,6 +191,9 @@ class Louvain:
                     f.col("mt.k_i_D"),
                     f.col("mt.sum_tot_S"),
                     f.col("sum_tot_D.sum_tot_C").alias("sum_tot_D"))
+
+        mt.show(30)
+        print("MT 6: ", mt.count())
 
         print("MT1 COMM FUNCS")
 
@@ -183,8 +210,8 @@ class Louvain:
         mt, single_node_communities = self.__compute_modularity_terms__(current_graph, current_communities)
 
         mt.show(30)
-        print(mt.count())
-
+        print("FINAL")
+        print("FINAL: ", mt.count())
 
         # # Compute modularity change (delta Q)
         # mc = mt.withColumn("delta_Q",
@@ -409,5 +436,3 @@ class Louvain:
             iteration += 1
             if self.max_iterations > 0 and iteration >= self.max_iterations:
                 break
-
-
