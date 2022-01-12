@@ -39,16 +39,16 @@ if __name__ == '__main__':
 
     # g.unpersist()
 
-    components = g.labelPropagation(maxIter=10).withColumnRenamed("id", "author").withColumnRenamed("label",
-                                                                                                    "id_component")
+    # components = g.labelPropagation(maxIter=10).withColumnRenamed("id", "author").withColumnRenamed("label",
+    #                                                                                                 "id_component")
 
-    # components = g.connectedComponents().withColumnRenamed("id", "author").withColumnRenamed("component", "id_component")   # .orderBy("component").show()
+    components = g.connectedComponents().withColumnRenamed("id", "author").withColumnRenamed("component", "id_component")   # .orderBy("component").show()
 
     components.show(5)
 
     sys.exit()
     # Get number of all components
-    components.select(f.approx_count_distinct("id_component").alias("Number of connected components")).show()
+    # components.select(f.approx_count_distinct("id_component").alias("Number of connected components")).show()
 
     # Get values of all components
     components.select(f.col("id_component")).distinct().show()
