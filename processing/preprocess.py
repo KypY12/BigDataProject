@@ -83,18 +83,25 @@ def read_coauthorship_graph(session, path):
                                         session.read.parquet(f"{path}/edges"))
 
 
+def sample_graph(graph):
+
+    vertices = graph.vertices
+    edges = graph.edges
+
+
+
 if __name__ == '__main__':
     session = SparkSession \
         .builder \
         .appName("Preprocessing Main") \
-        .config("spark.executor.memory", "4g") \
-        .config("spark.driver.memory", "4g") \
+        .config("spark.executor.memory", "8g") \
+        .config("spark.driver.memory", "8g") \
         .getOrCreate()
     # .config("spark.default.parallelism", "30") \
 
     session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
 
-    sample_size = 1_000_000
+    sample_size = 1_500_000
     metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
 
