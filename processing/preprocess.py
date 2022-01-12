@@ -60,7 +60,7 @@ def construct_e_and_v(metadata_df):
                 f.col("left.id").alias("article_id"),
                 f.split(f.col("left.categories"), " ").alias("article_categories"),
                 f.col("left.update_date")) \
-    #     .where(f.col("src") != f.col("dst"))
+        .where(f.col("src") != f.col("dst"))
 
     # authors_e = authors_e.checkpoint()
 
