@@ -54,23 +54,23 @@ def construct_e_and_v(metadata_df):
     authors_e = authors_e.alias("left") \
         .join(authors_e.alias("right"),
               f.col("left.id") == f.col("right.id")) \
-        # .select(f.col("left.author_name").alias("src"),
-        #         f.col("right.author_name").alias("dst"),
-        #         f.col("left.id").alias("article_id"),
-        #         f.split(f.col("left.categories"), " ").alias("article_categories"),
-        #         f.col("left.update_date")) \
-        # .where(f.col("src") != f.col("dst"))
+        .select(f.col("left.author_name").alias("src"),
+                f.col("right.author_name").alias("dst"),
+                f.col("left.id").alias("article_id"),
+                f.split(f.col("left.categories"), " ").alias("article_categories"),
+                f.col("left.update_date")) \
+        .where(f.col("src") != f.col("dst"))
 
     # authors_e = authors_e.checkpoint()
 
-    # authors_e = authors_e \
-    #     .groupBy([f.col("src"), f.col("dst")]) \
-    #     .agg(f.count(f.col("article_id")).alias("articles_count"),
-    #          # f.collect_list("article_id").alias("articles_ids"),
-    #          # f.collect_list("article_categories").alias("articles_categories"),
-    #          # f.collect_list("update_date").alias("articles_update_date")
-    #          ) \
-    #     .orderBy("src", ascending=True)
+    authors_e = authors_e \
+        .groupBy([f.col("src"), f.col("dst")]) \
+        .agg(f.count(f.col("article_id")).alias("articles_count"),
+             # f.collect_list("article_id").alias("articles_ids"),
+             # f.collect_list("article_categories").alias("articles_categories"),
+             # f.collect_list("update_date").alias("articles_update_date")
+             ) \
+        .orderBy("src", ascending=True)
     # .orderBy("articles_count", ascending=False)
 
     # authors_e = authors_e \
