@@ -4,7 +4,37 @@ import pyspark.sql.functions as f
 from processing.preprocess import read_coauthorship_graph, construct_coauthorship_graph
 
 
+def generate_connected_components(session_, graph_path):
+    # Generates the connected components and writes to disk -> cols : [id, component]
+    current_graph = read_coauthorship_graph(session_, graph_path)
+
+    components = current_graph.connectedComponents()
+
+    components.show()
+
+    components.write \
+        .option("header", True) \
+        .mode("overwrite") \
+        .parquet("../data/connected_components")
+
+
+def get_saved_connected_components(session_):
+    # Returns the connected components -> cols : [id, component]
+    return session_.read.parquet("../data/connected_components")
+
+
+def get_saved_connected_component_subgraph(session_, component):
+    # Reads from disk and creates the subgraph of connected component given as parameter
+    # The component parameter is a number corresponding to the component (its rank by number of nodes)
+    comp_vertices = session_.read.parquet(f"../data/connected_components_subgraphs/component_{component}/vertices")
+    comp_edges = session_.read.parquet(f"../data/connected_components_subgraphs/component_{component}/edges")
+
+    return construct_coauthorship_graph(comp_vertices, comp_edges)
+
+
 def get_component_subgraph(graph, components, target_component):
+    # Creates the subgraph of graph, where all nodes are in target_component (the actual component id) from components
+
     # Get the vertices of the component subgraph
     subgraph_vertices = components \
         .where(f.col("component") == target_component) \
@@ -12,15 +42,17 @@ def get_component_subgraph(graph, components, target_component):
 
     # Get the edges of the component subgraph
     #   Add src components ids
-    subgraph_edges = current_graph.edges \
+    #   [src, dst, articles_count] -> [src, dst, articles_count, src_component]
+    subgraph_edges = graph.edges \
         .join(components,
-              current_graph.edges["src"] == components["id"]) \
+              graph.edges["src"] == components["id"]) \
         .select(f.col("component").alias("src_component"),
                 f.col("src"),
                 f.col("dst"),
                 f.col("articles_count"))
 
     #   Add dst components ids
+    #   [src, dst, articles_count, src_component] -> [src, dst, articles_count, src_component, dst_component]
     subgraph_edges = subgraph_edges \
         .join(components,
               subgraph_edges["dst"] == components["id"]) \
@@ -38,45 +70,16 @@ def get_component_subgraph(graph, components, target_component):
     return subgraph_vertices, subgraph_edges
 
 
-if __name__ == '__main__':
-    session = SparkSession \
-        .builder \
-        .appName("Preprocessing Main") \
-        .config("spark.executor.memory", "8g") \
-        .config("spark.driver.memory", "8g") \
-        .getOrCreate()
-
-    session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
-
-    current_graph = read_coauthorship_graph(session, "../data")
-
-    # current_graph.vertices.show()
-    # current_graph.edges.show()
-    #
-    # print(f"Vertex Count : {current_graph.vertices.count()}")
-    # print(f"Edge Count : {current_graph.edges.count()}")
-    #
-    # components = current_graph.connectedComponents()
-    #
-    # components.show()
-    #
-    # components.write \
-    #     .option("header", True) \
-    #     .mode("overwrite") \
-    #     .parquet("../data/connected_components")
-
-    components = session.read.parquet("../data/connected_components")
-
+def write_first_n_components(current_graph, components, first_n):
     components_counts = components \
         .groupBy(f.col("component")) \
         .count() \
         .orderBy(f.col("count"), ascending=False)
 
     components_counts.show()
-    print(f"Connected components : {components_counts.count()}")
-    print(f"Connected components : {components_counts.agg(f.max('count').alias('max')).collect()[0]['max']}")
+    # print(f"Connected components : {components_counts.count()}")
+    # print(f"Max connected component size : {components_counts.agg(f.max('count').alias('max')).collect()[0]['max']}")
 
-    first_n = 6
     target_connected_components = components_counts.head(first_n)
 
     for rank, target_comp in enumerate(target_connected_components):
@@ -92,11 +95,26 @@ if __name__ == '__main__':
             .mode("overwrite") \
             .parquet(f"../data/connected_components_subgraphs/component_{rank + 1}/edges")
 
-    max_comp_vertices = session.read.parquet(f"../data/connected_components_subgraphs/component_1/vertices")
-    max_comp_edges = session.read.parquet(f"../data/connected_components_subgraphs/component_1/edges")
 
-    max_comp_vertices.show()
-    max_comp_edges.show()
-    print(f"Max component vertices : {max_comp_vertices.count()}")
-    print(f"Max component edges : {max_comp_edges.count()}")
+if __name__ == '__main__':
+    session = SparkSession \
+        .builder \
+        .appName("Connected components script") \
+        .config("spark.executor.memory", "8g") \
+        .config("spark.driver.memory", "8g") \
+        .getOrCreate()
 
+    session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
+
+    # generate_connected_components(session, graph_path="../data")
+
+    # components = get_saved_connected_components(session)
+
+    # write_first_n_components(current_graph, components, first_n=6)
+
+    component_subgraph = get_saved_connected_component_subgraph(session, 1)
+
+    component_subgraph..show()
+    component_subgraph.edges.show()
+    print(f"Component vertices : {component_subgraph.vertices.count()}")
+    print(f"Component edges : {component_subgraph.vertices.count()}")
