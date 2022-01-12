@@ -48,9 +48,9 @@ def construct_e_and_v(metadata_df):
         .select(*metadata_df.columns,
                 f.array_join(f.col("authors_processed"), delimiter=" ").alias("author_name"))
 
-    authors_e.persist()
-    # authors_e = authors_e.checkpoint()
-    #
+    # authors_e.persist()
+    authors_e = authors_e.checkpoint()
+
     authors_e = authors_e.alias("left") \
         .join(authors_e.alias("right"),
               f.col("left.id") == f.col("right.id")) \
@@ -61,7 +61,7 @@ def construct_e_and_v(metadata_df):
                 f.col("left.update_date")) \
         .where(f.col("src") != f.col("dst"))
 
-    # authors_e = authors_e.checkpoint()
+    authors_e = authors_e.checkpoint()
 
     authors_e = authors_e \
         .groupBy([f.col("src"), f.col("dst")]) \
