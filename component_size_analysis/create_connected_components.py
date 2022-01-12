@@ -115,7 +115,7 @@ if __name__ == '__main__':
 
     # write_first_n_components(current_graph, components, first_n=6)
 
-    component_subgraph = get_saved_connected_component_subgraph(session, 1)
+    component_subgraph = get_saved_connected_component_subgraph(session, 2)
 
     component_subgraph.vertices.show()
     component_subgraph.edges.show()
