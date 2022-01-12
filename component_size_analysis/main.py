@@ -29,6 +29,9 @@ if __name__ == '__main__':
 
     g = read_coauthorship_graph(session, "../data")
 
+    g.vertices.show()
+    g.edges.show()
+
     # g.edges.persist(StorageLevel(True, False, False, False, 2))
     # print(metadata_df.count())
     # print(g.vertices.count())
