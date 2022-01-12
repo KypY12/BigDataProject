@@ -1,14 +1,11 @@
-import pandas as pd
-
-from pyspark import StorageLevel
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as f
 
-numPartitions = 12
 session = SparkSession \
     .builder \
-    .appName("Testing") \
-    .config("spark.default.parallelism", numPartitions) \
+    .appName("Louvain run") \
+    .config("spark.executor.memory", "8g") \
+    .config("spark.driver.memory", "8g") \
     .getOrCreate()
 
 from algorithm.louvain import Louvain
