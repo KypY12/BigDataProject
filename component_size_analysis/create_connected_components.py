@@ -107,13 +107,13 @@ if __name__ == '__main__':
 
     session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
 
-    current_graph = read_coauthorship_graph(session, "../data")
+    # current_graph = read_coauthorship_graph(session, "../data")
 
     # generate_connected_components(current_graph)
 
-    components = get_saved_connected_components(session)
+    # components = get_saved_connected_components(session)
 
-    write_first_n_components(current_graph, components, first_n=6)
+    # write_first_n_components(current_graph, components, first_n=6)
 
     component_subgraph = get_saved_connected_component_subgraph(session, 1)
 
