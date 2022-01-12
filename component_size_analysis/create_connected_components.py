@@ -35,7 +35,7 @@ def get_component_subgraph(graph, components, target_component):
         .where((f.col("src_id_component") == target_component) &
                (f.col("src_id_component") == f.col("dst_id_component")))
 
-    return construct_coauthorship_graph(subgraph_vertices, subgraph_edges)
+    return subgraph_vertices, subgraph_edges
 
 
 if __name__ == '__main__':
@@ -73,12 +73,30 @@ if __name__ == '__main__':
         .orderBy(f.col("count"), ascending=False)
 
     components_counts.show()
+    print(f"Connected components : {components_counts.count()}")
+    print(f"Connected components : {components_counts.agg(f.max('count').alias('max')).collect()[0]['max']}")
 
     first_n = 6
+    target_connected_components = components_counts.head(first_n)
 
-    print(components_counts.head(first_n))
+    for rank, target_comp in enumerate(target_connected_components):
+        vertices, edges = get_component_subgraph(current_graph, components, target_comp["component"])
 
-    # print("Connected components : ", components.groupBy(f.col("component")).agg(f.col("component")).count())
-    #
-    # print("Max connected component size : ",
-    #       components.groupBy(f.col("component")).count().agg(f.max("count")).collect())
+        vertices.write \
+            .option("header", True) \
+            .mode("overwrite") \
+            .parquet(f"../data/connected_components_subgraphs/component_{rank + 1}/vertices")
+
+        edges.write \
+            .option("header", True) \
+            .mode("overwrite") \
+            .parquet(f"../data/connected_components_subgraphs/component_{rank + 1}/edges")
+
+    max_comp_vertices = session.read.parquet(f"../data/connected_components_subgraphs/component_1/vertices")
+    max_comp_edges = session.read.parquet(f"../data/connected_components_subgraphs/component_1/edges")
+
+    max_comp_vertices.show()
+    max_comp_edges.show()
+    print(f"Max component vertices : {max_comp_vertices.count()}")
+    print(f"Max component edges : {max_comp_edges.count()}")
+
