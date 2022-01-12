@@ -4,10 +4,8 @@ import pyspark.sql.functions as f
 from processing.preprocess import read_coauthorship_graph, construct_coauthorship_graph
 
 
-def generate_connected_components(session_, graph_path):
+def generate_connected_components(current_graph):
     # Generates the connected components and writes to disk -> cols : [id, component]
-    current_graph = read_coauthorship_graph(session_, graph_path)
-
     components = current_graph.connectedComponents()
 
     components.show()
@@ -65,7 +63,10 @@ def get_component_subgraph(graph, components, target_component):
     #   Keep only edges with nodes in the component
     subgraph_edges = subgraph_edges \
         .where((f.col("src_component") == target_component) &
-               (f.col("src_component") == f.col("dst_component")))
+               (f.col("src_component") == f.col("dst_component"))) \
+        .select(f.col("src"),
+                f.col("dst"),
+                f.col("articles_count"))
 
     return subgraph_vertices, subgraph_edges
 
@@ -106,11 +107,13 @@ if __name__ == '__main__':
 
     session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
 
-    # generate_connected_components(session, graph_path="../data")
+    current_graph = read_coauthorship_graph(session, "../data")
 
-    # components = get_saved_connected_components(session)
+    # generate_connected_components(current_graph)
 
-    # write_first_n_components(current_graph, components, first_n=6)
+    components = get_saved_connected_components(session)
+
+    write_first_n_components(current_graph, components, first_n=6)
 
     component_subgraph = get_saved_connected_component_subgraph(session, 1)
 
