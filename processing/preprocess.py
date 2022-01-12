@@ -127,9 +127,8 @@ if __name__ == '__main__':
         .appName("Preprocessing Main") \
         .config("spark.executor.memory", "4g") \
         .config("spark.driver.memory", "4g") \
+        .config("spark.default.parallelism", "30") \
         .getOrCreate()
-    # .config("spark.driver.memory", "8g") \
-    # .config("spark.default.parallelism", "30") \
 
     session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
 
