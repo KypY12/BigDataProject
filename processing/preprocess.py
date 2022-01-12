@@ -96,13 +96,14 @@ if __name__ == '__main__':
 
     # sample_size = 100
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
-    metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
+    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
 
-    g = preprocess_data(metadata_df)
+    # g = preprocess_data(metadata_df)
     # write_coauthorship_graph(g, "../data/authors_graph")
-    write_coauthorship_graph(g, "file:///home/ubuntu/BigDataProject/data/authors_graph")
+    # write_coauthorship_graph(g, "file:///home/ubuntu/BigDataProject/data/authors_graph")
 
     # g = read_coauthorship_graph(session, "../data/authors_graph")
+    g = read_coauthorship_graph(session, "file:///home/ubuntu/BigDataProject/data/authors_graph")
 
     g.vertices.show()
     g.edges.show()
