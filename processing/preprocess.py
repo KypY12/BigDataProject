@@ -48,7 +48,7 @@ def construct_e_and_v(metadata_df):
         .select(*metadata_df.columns,
                 f.array_join(f.col("authors_processed"), delimiter=" ").alias("author_name"))
 
-    # authors_e.persist()
+    authors_e.persist()
     # authors_e = authors_e.checkpoint()
     #
     authors_e = authors_e.alias("left") \
