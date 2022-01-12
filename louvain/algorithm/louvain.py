@@ -138,6 +138,8 @@ class Louvain:
         mt.show(30)
         print("MT 2: ", mt.count())
 
+        mt = mt.checkpoint()
+
         mt = mt \
             .join(k_i_C.alias("k_i_S"),
                   on=[f.col("mt.i") == f.col("k_i_S.i"),
