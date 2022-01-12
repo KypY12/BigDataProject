@@ -80,7 +80,7 @@ def write_coauthorship_graph(g, path):
 
 def read_coauthorship_graph(session, path):
     return construct_coauthorship_graph(session.read.parquet(f"{path}/vertices"),
-                                        session.read.parquet(f"{path}/edges"))
+                                        session.read.parquet(f"{path}/edges").limit(600))
 
 
 if __name__ == '__main__':

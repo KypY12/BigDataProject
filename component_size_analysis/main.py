@@ -29,8 +29,6 @@ if __name__ == '__main__':
 
     g = read_coauthorship_graph(session, "../data")
 
-    g.edges = g.edges.limit(600)
-
     g.vertices.show()
     g.edges.show()
 
