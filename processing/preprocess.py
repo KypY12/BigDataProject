@@ -66,8 +66,8 @@ def construct_e_and_v(metadata_df):
 
     authors_e = authors_e \
         .groupBy([f.col("src"), f.col("dst")]) \
-        .agg(f.count(f.col("article_id")).alias("articles_count"),)
-    #          f.collect_list("article_id").alias("articles_ids"),
+        .agg(f.count(f.col("article_id")).alias("articles_count"),
+             f.collect_list("article_id").alias("articles_ids"),)
     #          f.collect_list("article_categories").alias("articles_categories"),
     #          f.collect_list("update_date").alias("articles_update_date")
     #          ) \
