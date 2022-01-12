@@ -99,7 +99,7 @@ def write_first_n_components(current_graph, components, first_n):
 if __name__ == '__main__':
     session = SparkSession \
         .builder \
-        .appName("Connected components script") \
+        .appName("Connected components") \
         .config("spark.executor.memory", "8g") \
         .config("spark.driver.memory", "8g") \
         .getOrCreate()
