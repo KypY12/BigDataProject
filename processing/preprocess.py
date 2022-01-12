@@ -29,17 +29,17 @@ def construct_e_and_v(metadata_df):
                     f.explode(comb_udf(f.col("authors_parsed"))))
 
     # authors_e = authors_e.checkpoint()
-
-    authors_e = authors_e.select(f.col("authors_processed")["author_1"].alias("src"),
-                                 f.col("authors_processed")["author_2"].alias("dst"),
-                                 f.col("id").alias("article_id"),
-                                 f.split(f.col("categories"), " ").alias("article_categories"),
-                                 f.col("update_date")) \
-        .groupBy([f.col("src"), f.col("dst")]) \
-        .agg(f.count(f.col("article_id")).alias("articles_count"),)
-             # f.collect_list("article_id").alias("articles_ids"),
-             # f.collect_list("article_categories").alias("articles_categories"),
-             # f.collect_list("update_date").alias("articles_update_date")) \
+    #
+    # authors_e = authors_e.select(f.col("authors_processed")["author_1"].alias("src"),
+    #                              f.col("authors_processed")["author_2"].alias("dst"),
+    #                              f.col("id").alias("article_id"),
+    #                              f.split(f.col("categories"), " ").alias("article_categories"),
+    #                              f.col("update_date")) \
+    #     .groupBy([f.col("src"), f.col("dst")]) \
+    #     .agg(f.count(f.col("article_id")).alias("articles_count"),
+    #          f.collect_list("article_id").alias("articles_ids"),
+    #          f.collect_list("article_categories").alias("articles_categories"),
+    #          f.collect_list("update_date").alias("articles_update_date")) \
     #     .orderBy("src", ascending=True)
     # # .orderBy("articles_count", ascending=False)
 
@@ -84,6 +84,7 @@ def construct_e_and_v(metadata_df):
     # # .orderBy("articles_count", ascending=False)
 
     authors_e.show()
+    print(authors_e.count())
 
     # Create a Vertex DataFrame with unique ID column "id"
     authors_v = metadata_df \
