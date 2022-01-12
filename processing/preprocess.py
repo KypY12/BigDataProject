@@ -36,12 +36,12 @@ def construct_e_and_v(metadata_df):
                                  f.split(f.col("categories"), " ").alias("article_categories"),
                                  f.col("update_date")) \
         .groupBy([f.col("src"), f.col("dst")]) \
-        .agg(f.count(f.col("article_id")).alias("articles_count"),
-             f.collect_list("article_id").alias("articles_ids"),
-             f.collect_list("article_categories").alias("articles_categories"),
-             f.collect_list("update_date").alias("articles_update_date")) \
-        .orderBy("src", ascending=True)
-    # .orderBy("articles_count", ascending=False)
+        .agg(f.count(f.col("article_id")).alias("articles_count"),)
+             # f.collect_list("article_id").alias("articles_ids"),
+             # f.collect_list("article_categories").alias("articles_categories"),
+             # f.collect_list("update_date").alias("articles_update_date")) \
+    #     .orderBy("src", ascending=True)
+    # # .orderBy("articles_count", ascending=False)
 
     # authors_e = metadata_df \
     #     .withColumn("authors_processed",
