@@ -70,17 +70,17 @@ def write_coauthorship_graph(g, path):
     g.vertices.write \
         .option("header", True) \
         .mode("overwrite") \
-        .json(f"{path}/vertices")
+        .parquet(f"{path}/vertices")
 
     g.edges.write \
         .option("header", True) \
         .mode("overwrite") \
-        .json(f"{path}/edges")
+        .parquet(f"{path}/edges")
 
 
 def read_coauthorship_graph(session, path):
-    return construct_coauthorship_graph(session.read.json(f"{path}/vertices"),
-                                        session.read.json(f"{path}/edges"))
+    return construct_coauthorship_graph(session.read.parquet(f"{path}/vertices"),
+                                        session.read.parquet(f"{path}/edges"))
 
 
 if __name__ == '__main__':
@@ -96,19 +96,18 @@ if __name__ == '__main__':
 
     # sample_size = 100
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
-    metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
+    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
 
-    g = preprocess_data(metadata_df)
-    # write_coauthorship_graph(g, "../data/authors_graph")
+    # g = preprocess_data(metadata_df)
+    # write_coauthorship_graph(g, "../data")
 
-    # g = read_coauthorship_graph(session, "../data/authors_graph")
-    # g = read_coauthorship_graph(session, "file:///home/ubuntu/BigDataProject/data/authors_graph")
+    g = read_coauthorship_graph(session, "../data")
+
+    # g.vertices.write.mode("overwrite").parquet("../data/vertices")
+    # g.edges.write.mode("overwrite").parquet("../data/edges")
 
     g.vertices.show()
     g.edges.show()
-
-    g.vertices.write.mode("overwrite").parquet("../data/vertices")
-    g.edges.write.mode("overwrite").parquet("../data/edges")
 
     print(f"Vertx Count : {g.vertices.count()}")
     print(f"Edge Count : {g.edges.count()}")
