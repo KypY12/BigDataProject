@@ -1,4 +1,5 @@
 from pyspark.sql import SparkSession
+import pyspark.sql.functions as f
 
 from processing.preprocess import read_coauthorship_graph
 
@@ -22,4 +23,12 @@ if __name__ == '__main__':
     components = g.connectedComponents()
 
     components.show()
-    print(f"Connected components : {components.count()}")
+
+    components.write \
+        .option("header", True) \
+        .mode("overwrite") \
+        .parquet("../data/connected_components")
+
+    print("Connected components : ", components.gropuBy(f.col("component")).agg(f.col("component")).count())
+
+    print("Max connected component size : ", components.gropuBy(f.col("component")).count().agg(f.max("count")).collect())
