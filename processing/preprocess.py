@@ -72,14 +72,12 @@ def construct_e_and_v(metadata_df):
     #     # .orderBy("src", ascending=True)
     # # .orderBy("articles_count", ascending=False)
 
+    authors_e_articles_ids = authors_e \
+        .groupBy([f.col("src"), f.col("dst")]) \
+        .agg(f.collect_list("article_id").alias("articles_ids"))
 
-    # authors_e_articles_ids = authors_e \
-    #     .groupBy([f.col("src"), f.col("dst")]) \
-    #     .agg(f.collect_list("article_id").alias("articles_ids"))
-    #
-    # authors_e_articles_ids.show()
-    # print(authors_e_articles_ids.count())
-
+    authors_e_articles_ids.show()
+    print("ARTICLES IDS : ", authors_e_articles_ids.count())
 
     # Create a Vertex DataFrame with unique ID column "id"
     authors_v = metadata_df \
@@ -136,8 +134,8 @@ if __name__ == '__main__':
         .appName("Preprocessing Main") \
         .config("spark.executor.memory", "4g") \
         .config("spark.driver.memory", "4g") \
-        .config("spark.default.parallelism", "30") \
         .getOrCreate()
+    # .config("spark.default.parallelism", "30") \
 
     session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
 
@@ -152,8 +150,8 @@ if __name__ == '__main__':
 
     g = preprocess_data(metadata_df)
 
-    g.vertices.show()
-    g.edges.show()
+    # g.vertices.show()
+    # g.edges.show()
 
     print(f"Vertx Count : {g.vertices.count()}")
     print(f"Edge Count : {g.edges.count()}")
