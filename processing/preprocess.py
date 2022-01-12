@@ -83,13 +83,6 @@ def read_coauthorship_graph(session, path):
                                         session.read.parquet(f"{path}/edges"))
 
 
-def sample_graph(graph):
-
-    vertices = graph.vertices
-    edges = graph.edges
-
-
-
 if __name__ == '__main__':
     session = SparkSession \
         .builder \
@@ -101,24 +94,18 @@ if __name__ == '__main__':
 
     session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
 
-    # sample_size = 1_500_000
+    # sample_size = 100
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
-    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
 
-    # g = preprocess_data(metadata_df)
-    # write_coauthorship_graph(g, "../data")
-    # write_coauthorship_graph(g, "../data/authors_graph")
+    metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
 
-    g = read_coauthorship_graph(session, "../data")
-    # g = read_coauthorship_graph(session, "../data/authors_graph")
+    g = preprocess_data(metadata_df)
+    write_coauthorship_graph(g, "../data")
+
+    # g = read_coauthorship_graph(session, "../data")
 
     g.vertices.show()
     g.edges.show()
 
     print(f"Vertx Count : {g.vertices.count()}")
     print(f"Edge Count : {g.edges.count()}")
-
-    components = g.connectedComponents()
-
-    components.show()
-    print(f"Connected components : {components.count()}")

@@ -252,7 +252,7 @@ if __name__ == '__main__':
 
     # write_coauthorship_graph(g, "../data/authors_graph")
 
-    g = read_coauthorship_graph(session, "../data/authors_graph")
+    g = read_coauthorship_graph(session, "../data")
 
     louvain_alg = Louvain(g, session)
 
