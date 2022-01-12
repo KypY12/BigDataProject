@@ -10,24 +10,24 @@ from pyspark.sql.types import ArrayType, StructType, StructField, StringType
 
 
 def construct_e_and_v(metadata_df):
-    def get_combinations(x):
-        if len(x) == 1:
-            name = " ".join(x[0])
-            return [(name, name)]
-        else:
-            # return list(itertools.combinations([" ".join(y) for y in x], 2))
-            return list(filter(lambda t: t[0] != t[1], list(itertools.product([" ".join(y) for y in x], repeat=2))))
-
-    udf_res_schema = ArrayType(StructType([
-        StructField("author_1", StringType(), False),
-        StructField("author_2", StringType(), False)
-    ]))
-    comb_udf = f.udf(get_combinations, udf_res_schema)
-
-    authors_e = metadata_df \
-        .withColumn("authors_processed",
-                    f.explode(comb_udf(f.col("authors_parsed"))))
-
+    # def get_combinations(x):
+    #     if len(x) == 1:
+    #         name = " ".join(x[0])
+    #         return [(name, name)]
+    #     else:
+    #         # return list(itertools.combinations([" ".join(y) for y in x], 2))
+    #         return list(filter(lambda t: t[0] != t[1], list(itertools.product([" ".join(y) for y in x], repeat=2))))
+    #
+    # udf_res_schema = ArrayType(StructType([
+    #     StructField("author_1", StringType(), False),
+    #     StructField("author_2", StringType(), False)
+    # ]))
+    # comb_udf = f.udf(get_combinations, udf_res_schema)
+    #
+    # authors_e = metadata_df \
+    #     .withColumn("authors_processed",
+    #                 f.explode(comb_udf(f.col("authors_parsed"))))
+    #
     # authors_e = authors_e.checkpoint()
     #
     # authors_e = authors_e.select(f.col("authors_processed")["author_1"].alias("src"),
@@ -43,15 +43,15 @@ def construct_e_and_v(metadata_df):
     #     .orderBy("src", ascending=True)
     # # .orderBy("articles_count", ascending=False)
 
-    # authors_e = metadata_df \
-    #     .withColumn("authors_processed",
-    #                 f.explode(f.col("authors_parsed"))) \
-    #     .select(*metadata_df.columns,
-    #             f.array_join(f.col("authors_processed"), delimiter=" ").alias("author_name"))
-    #
-    # # authors_e.persist()
-    # # authors_e = authors_e.checkpoint()
-    #
+    authors_e = metadata_df \
+        .withColumn("authors_processed",
+                    f.explode(f.col("authors_parsed"))) \
+        .select(*metadata_df.columns,
+                f.array_join(f.col("authors_processed"), delimiter=" ").alias("author_name"))
+
+    # authors_e.persist()
+    # authors_e = authors_e.checkpoint()
+
     # authors_e = authors_e.alias("left") \
     #     .join(authors_e.alias("right"),
     #           f.col("left.id") == f.col("right.id")) \
@@ -61,9 +61,9 @@ def construct_e_and_v(metadata_df):
     #             f.split(f.col("left.categories"), " ").alias("article_categories"),
     #             f.col("left.update_date")) \
     #     .where(f.col("src") != f.col("dst"))
-    #
-    # # authors_e = authors_e.checkpoint()
-    #
+
+    # authors_e = authors_e.checkpoint()
+
     # authors_e = authors_e \
     #     .groupBy([f.col("src"), f.col("dst")]) \
     #     .agg(f.count(f.col("article_id")).alias("articles_count"),
@@ -73,15 +73,15 @@ def construct_e_and_v(metadata_df):
     #          ) \
     #     # .orderBy("src", ascending=True)
     # # .orderBy("articles_count", ascending=False)
-    #
-    # # authors_e = authors_e \
-    # #     .groupBy([f.col("src"), f.col("dst")]) \
-    # #     .agg(f.count(f.col("article_id")).alias("articles_count"),
-    # #          f.collect_list("article_id").alias("articles_ids"),
-    # #          f.collect_list("article_categories").alias("articles_categories"),
-    # #          f.collect_list("update_date").alias("articles_update_date")) \
-    # #     .orderBy("src", ascending=True)
-    # # .orderBy("articles_count", ascending=False)
+
+    # authors_e = authors_e \
+    #     .groupBy([f.col("src"), f.col("dst")]) \
+    #     .agg(f.count(f.col("article_id")).alias("articles_count"),
+    #          f.collect_list("article_id").alias("articles_ids"),
+    #          f.collect_list("article_categories").alias("articles_categories"),
+    #          f.collect_list("update_date").alias("articles_update_date")) \
+    #     .orderBy("src", ascending=True)
+    # .orderBy("articles_count", ascending=False)
 
     authors_e.show()
     print(authors_e.count())
@@ -139,9 +139,11 @@ if __name__ == '__main__':
     session = SparkSession \
         .builder \
         .appName("Preprocessing Main") \
-        .config("spark.executor.memory", "8g") \
+        .config("spark.executor.memory", "4g") \
+        .config("spark.driver.memory", "4g") \
         .getOrCreate()
     # .config("spark.driver.memory", "8g") \
+    # .config("spark.default.parallelism", "30") \
 
     session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
 
