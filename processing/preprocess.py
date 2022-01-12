@@ -107,5 +107,5 @@ if __name__ == '__main__':
     g.vertices.show()
     g.edges.show()
 
-    print(f"Vertx Count : {g.vertices.count()}")
+    print(f"Vertex Count : {g.vertices.count()}")
     print(f"Edge Count : {g.edges.count()}")
