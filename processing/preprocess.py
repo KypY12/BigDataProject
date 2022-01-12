@@ -106,5 +106,8 @@ if __name__ == '__main__':
     g.vertices.show()
     g.edges.show()
 
+    g.vertices.write.mode("overwrite").parquet("../data/vertices")
+    g.edges.write.mode("overwrite").parquet("../data/edges")
+
     print(f"Vertx Count : {g.vertices.count()}")
     print(f"Edge Count : {g.edges.count()}")
