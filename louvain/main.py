@@ -254,8 +254,8 @@ if __name__ == '__main__':
 
     g = read_coauthorship_graph(session, "../data")
 
-    g.vertices.show()
     g.edges.show()
+    g.vertices.show()
 
     louvain_alg = Louvain(g, session)
 

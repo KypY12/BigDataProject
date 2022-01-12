@@ -50,131 +50,134 @@ class Louvain:
             .agg(f.count("community").alias("nodes_count")) \
             .where(f.col("nodes_count") == 1)
 
-        single_node_communities = single_node_communities.persist()
+        single_node_communities.show()
 
-        # print("SINGLE nodes COMM FUNCS")
-        # print(single_node_communities.count())
-        # single_node_communities.show()
-
-        single_node_communities_edges = single_node_communities \
-            .join(current_communities.alias("com"),
-                  single_node_communities["community"] == current_communities["community"]) \
-            .select(f.col("com.id"),
-                    f.col("com.community"))
-
-        single_node_communities_edges = single_node_communities_edges.alias("snc1") \
-            .join(single_node_communities_edges.alias("snc2"),
-                  f.col("snc1.id") == f.col("snc2.id")) \
-            .select(f.col("snc1.id").alias("src"),
-                    f.col("snc2.id").alias("dst"),
-                    f.col("snc1.community").alias("community_src"),
-                    f.col("snc2.community").alias("community_dst"),
-                    f.lit(0).alias("articles_count"))
-
-        # print("SINGLE edges COMM FUNCS")
-        # print(single_node_communities_edges.count())
-        # single_node_communities_edges.show()
-
-        # Construct an auxiliary table : [community_src, community_dst, src, dst, articles_count]
-        comm_aux_df = current_graph.edges \
-            .where(f.col("src") != f.col("dst")) \
-            .join(current_communities, current_graph.edges["dst"] == current_communities["id"]) \
-            .select(f.col("community").alias("community_dst"),
-                    f.col("src"),
-                    f.col("dst"),
-                    f.col("articles_count"))
-        comm_aux_df = comm_aux_df \
-            .join(current_communities, comm_aux_df["src"] == current_communities["id"]) \
-            .select(f.col("community").alias("community_src"),
-                    *comm_aux_df.columns)
-
-        # print("AUX COMM FUNCS1")
-        comm_aux_df = comm_aux_df.unionByName(single_node_communities_edges)
-        # print("AUX COMM FUNCS2")
-
-        single_node_communities_edges.unpersist()
-
-        comm_aux_df = comm_aux_df.persist()
-
-        # Compute all k_i (i is considered here the src node)
-        # Needs to be computed once (each iteration's update doesn't change the values in this dataframe)
-        if self.k_i is None:
-            self.k_i = comm_aux_df \
-                .groupBy(f.col("src").alias("i")) \
-                .agg(f.sum("articles_count").alias("k_i"))
-            self.k_i = self.k_i.persist()
-
-        # Compute all k_i_S and k_i_D (i is considered here the src node)
-        k_i_C = comm_aux_df \
-            .groupBy([f.col("src").alias("i"),
-                      f.col("community_dst").alias("C")]) \
-            .agg(f.sum("articles_count").alias("k_i_C"))
-
-        # Compute all sum_tot_S and sum_tot_D
-        sum_tot_C = comm_aux_df \
-            .groupBy(f.col("community_src").alias("C")) \
-            .agg(f.sum("articles_count").alias("sum_tot_C"))
-
-        # print("compute COMM FUNCS")
-
-        # Compute modularity terms; a table with the following schema:
-        # | i | S_i | D_i | k_i | k_i_S | k_i_D | sum_tot_S | sum_tot_D |
-        mt = comm_aux_df \
-            .select(f.col("src"),
-                    f.col("community_src")) \
-            .distinct() \
-            .alias("mt") \
-            .join(self.k_i.alias("k_i"),
-                  on=f.col("mt.src") == f.col("k_i.i")) \
-            .select(f.col("k_i.i"),
-                    f.col("mt.community_src").alias("S_i"),
-                    f.col("k_i.k_i")) \
-            .alias("mt") \
-            .join(k_i_C.alias("k_i_S"),
-                  on=[f.col("mt.i") == f.col("k_i_S.i"),
-                      f.col("mt.S_i") == f.col("k_i_S.C")]) \
-            .select(f.col("mt.i"),
-                    f.col("mt.S_i"),
-                    f.col("mt.k_i"),
-                    f.col("k_i_S.k_i_C").alias("k_i_S")) \
-            .alias("mt") \
-            .join(k_i_C.alias("k_i_D"),
-                  on=f.col("mt.i") == f.col("k_i_D.i")) \
-            .select(f.col("mt.i"),
-                    f.col("mt.S_i"),
-                    f.col("k_i_D.C").alias("D_i"),
-                    f.col("mt.k_i"),
-                    f.col("mt.k_i_S"),
-                    f.col("k_i_D.k_i_C").alias("k_i_D")) \
-            .alias("mt") \
-            .join(sum_tot_C.alias("sum_tot_S"),
-                  on=f.col("mt.S_i") == f.col("sum_tot_S.C")) \
-            .select(f.col("mt.i"),
-                    f.col("mt.S_i"),
-                    f.col("mt.D_i"),
-                    f.col("mt.k_i"),
-                    f.col("mt.k_i_S"),
-                    f.col("mt.k_i_D"),
-                    f.col("sum_tot_S.sum_tot_C").alias("sum_tot_S")) \
-            .alias("mt") \
-            .join(sum_tot_C.alias("sum_tot_D"),
-                  on=f.col("mt.D_i") == f.col("sum_tot_D.C")) \
-            .select(f.col("mt.i"),
-                    f.col("mt.S_i"),
-                    f.col("mt.D_i"),
-                    f.col("mt.k_i"),
-                    f.col("mt.k_i_S"),
-                    f.col("mt.k_i_D"),
-                    f.col("mt.sum_tot_S"),
-                    f.col("sum_tot_D.sum_tot_C").alias("sum_tot_D"))
-
-        # print("MT1 COMM FUNCS")
-
-        comm_aux_df.unpersist()
-        k_i_C.unpersist()
-        sum_tot_C.unpersist()
-
-        # print("MT2 COMM FUNCS")
+        mt = None
+        # single_node_communities = single_node_communities.persist()
+        #
+        # # print("SINGLE nodes COMM FUNCS")
+        # # print(single_node_communities.count())
+        # # single_node_communities.show()
+        #
+        # single_node_communities_edges = single_node_communities \
+        #     .join(current_communities.alias("com"),
+        #           single_node_communities["community"] == current_communities["community"]) \
+        #     .select(f.col("com.id"),
+        #             f.col("com.community"))
+        #
+        # single_node_communities_edges = single_node_communities_edges.alias("snc1") \
+        #     .join(single_node_communities_edges.alias("snc2"),
+        #           f.col("snc1.id") == f.col("snc2.id")) \
+        #     .select(f.col("snc1.id").alias("src"),
+        #             f.col("snc2.id").alias("dst"),
+        #             f.col("snc1.community").alias("community_src"),
+        #             f.col("snc2.community").alias("community_dst"),
+        #             f.lit(0).alias("articles_count"))
+        #
+        # # print("SINGLE edges COMM FUNCS")
+        # # print(single_node_communities_edges.count())
+        # # single_node_communities_edges.show()
+        #
+        # # Construct an auxiliary table : [community_src, community_dst, src, dst, articles_count]
+        # comm_aux_df = current_graph.edges \
+        #     .where(f.col("src") != f.col("dst")) \
+        #     .join(current_communities, current_graph.edges["dst"] == current_communities["id"]) \
+        #     .select(f.col("community").alias("community_dst"),
+        #             f.col("src"),
+        #             f.col("dst"),
+        #             f.col("articles_count"))
+        # comm_aux_df = comm_aux_df \
+        #     .join(current_communities, comm_aux_df["src"] == current_communities["id"]) \
+        #     .select(f.col("community").alias("community_src"),
+        #             *comm_aux_df.columns)
+        #
+        # # print("AUX COMM FUNCS1")
+        # comm_aux_df = comm_aux_df.unionByName(single_node_communities_edges)
+        # # print("AUX COMM FUNCS2")
+        #
+        # single_node_communities_edges.unpersist()
+        #
+        # # comm_aux_df = comm_aux_df.persist()
+        #
+        # # Compute all k_i (i is considered here the src node)
+        # # Needs to be computed once (each iteration's update doesn't change the values in this dataframe)
+        # if self.k_i is None:
+        #     self.k_i = comm_aux_df \
+        #         .groupBy(f.col("src").alias("i")) \
+        #         .agg(f.sum("articles_count").alias("k_i"))
+        #     self.k_i = self.k_i.persist()
+        #
+        # # Compute all k_i_S and k_i_D (i is considered here the src node)
+        # k_i_C = comm_aux_df \
+        #     .groupBy([f.col("src").alias("i"),
+        #               f.col("community_dst").alias("C")]) \
+        #     .agg(f.sum("articles_count").alias("k_i_C"))
+        #
+        # # Compute all sum_tot_S and sum_tot_D
+        # sum_tot_C = comm_aux_df \
+        #     .groupBy(f.col("community_src").alias("C")) \
+        #     .agg(f.sum("articles_count").alias("sum_tot_C"))
+        #
+        # # print("compute COMM FUNCS")
+        #
+        # # # Compute modularity terms; a table with the following schema:
+        # # | i | S_i | D_i | k_i | k_i_S | k_i_D | sum_tot_S | sum_tot_D |
+        # mt = comm_aux_df \
+        #     .select(f.col("src"),
+        #             f.col("community_src")) \
+        #     .distinct() \
+        #     .alias("mt") \
+        #     .join(self.k_i.alias("k_i"),
+        #           on=f.col("mt.src") == f.col("k_i.i")) \
+        #     .select(f.col("k_i.i"),
+        #             f.col("mt.community_src").alias("S_i"),
+        #             f.col("k_i.k_i")) \
+        #     .alias("mt") \
+        #     .join(k_i_C.alias("k_i_S"),
+        #           on=[f.col("mt.i") == f.col("k_i_S.i"),
+        #               f.col("mt.S_i") == f.col("k_i_S.C")]) \
+        #     .select(f.col("mt.i"),
+        #             f.col("mt.S_i"),
+        #             f.col("mt.k_i"),
+        #             f.col("k_i_S.k_i_C").alias("k_i_S")) \
+        #     .alias("mt") \
+        #     .join(k_i_C.alias("k_i_D"),
+        #           on=f.col("mt.i") == f.col("k_i_D.i")) \
+        #     .select(f.col("mt.i"),
+        #             f.col("mt.S_i"),
+        #             f.col("k_i_D.C").alias("D_i"),
+        #             f.col("mt.k_i"),
+        #             f.col("mt.k_i_S"),
+        #             f.col("k_i_D.k_i_C").alias("k_i_D")) \
+        #     .alias("mt") \
+        #     .join(sum_tot_C.alias("sum_tot_S"),
+        #           on=f.col("mt.S_i") == f.col("sum_tot_S.C")) \
+        #     .select(f.col("mt.i"),
+        #             f.col("mt.S_i"),
+        #             f.col("mt.D_i"),
+        #             f.col("mt.k_i"),
+        #             f.col("mt.k_i_S"),
+        #             f.col("mt.k_i_D"),
+        #             f.col("sum_tot_S.sum_tot_C").alias("sum_tot_S")) \
+        #     .alias("mt") \
+        #     .join(sum_tot_C.alias("sum_tot_D"),
+        #           on=f.col("mt.D_i") == f.col("sum_tot_D.C")) \
+        #     .select(f.col("mt.i"),
+        #             f.col("mt.S_i"),
+        #             f.col("mt.D_i"),
+        #             f.col("mt.k_i"),
+        #             f.col("mt.k_i_S"),
+        #             f.col("mt.k_i_D"),
+        #             f.col("mt.sum_tot_S"),
+        #             f.col("sum_tot_D.sum_tot_C").alias("sum_tot_D"))
+        #
+        # # print("MT1 COMM FUNCS")
+        #
+        # comm_aux_df.unpersist()
+        # k_i_C.unpersist()
+        # sum_tot_C.unpersist()
+        #
+        # # print("MT2 COMM FUNCS")
 
         return mt, single_node_communities
 
@@ -182,7 +185,7 @@ class Louvain:
 
         mt, single_node_communities = self.__compute_modularity_terms__(current_graph, current_communities)
 
-        mt.show(30)
+        # mt.show(30)
 
         # # Compute modularity change (delta Q)
         # mc = mt.withColumn("delta_Q",
