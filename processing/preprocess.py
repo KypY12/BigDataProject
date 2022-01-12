@@ -73,12 +73,12 @@ def construct_e_and_v(metadata_df):
     #     # .orderBy("src", ascending=True)
     # # .orderBy("articles_count", ascending=False)
 
-    # authors_e_articles_ids = authors_relations \
-    #     .groupBy([f.col("src"), f.col("dst")]) \
-    #     .agg(f.collect_list("article_id").alias("articles_ids"))
-    #
-    # authors_e_articles_ids.show()
-    # print("ARTICLES IDS : ", authors_e_articles_ids.count())
+    authors_e_articles_ids = authors_relations \
+        .groupBy([f.col("src"), f.col("dst")]) \
+        .agg(f.collect_list("article_id").alias("articles_ids"))
+
+    authors_e_articles_ids.show()
+    print("ARTICLES IDS : ", authors_e_articles_ids.count())
 
     # Create a Vertex DataFrame with unique ID column "id"
     authors_v = metadata_df \
