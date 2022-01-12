@@ -15,7 +15,7 @@ def get_component_subgraph(graph, components, target_component):
     subgraph_edges = current_graph.edges \
         .join(components,
               current_graph.edges["src"] == components["id"]) \
-        .select(f.col("id_component").alias("src_id_component"),
+        .select(f.col("component").alias("src_component"),
                 f.col("src"),
                 f.col("dst"),
                 f.col("articles_count"))
@@ -24,16 +24,16 @@ def get_component_subgraph(graph, components, target_component):
     subgraph_edges = subgraph_edges \
         .join(components,
               subgraph_edges["dst"] == components["id"]) \
-        .select(f.col("src_id_component"),
-                f.col("id_component").alias("dst_id_component"),
+        .select(f.col("src_component"),
+                f.col("component").alias("dst_component"),
                 f.col("src"),
                 f.col("dst"),
                 f.col("articles_count"))
 
     #   Keep only edges with nodes in the component
     subgraph_edges = subgraph_edges \
-        .where((f.col("src_id_component") == target_component) &
-               (f.col("src_id_component") == f.col("dst_id_component")))
+        .where((f.col("src_component") == target_component) &
+               (f.col("src_component") == f.col("dst_component")))
 
     return subgraph_vertices, subgraph_edges
 
