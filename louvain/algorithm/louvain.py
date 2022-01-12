@@ -300,41 +300,43 @@ class Louvain:
         current_communities = current_graph.vertices.withColumn("community", f.monotonically_increasing_id())
         current_communities = current_communities.persist()
 
-        if self.fp_max_iterations == -1:
+        self.__fp_iteration__(current_graph, current_communities, two_m, two_m_sq)
 
-            iteration = 0
-            while current_communities:
-
-                start = time.perf_counter()
-
-                current_communities = self.__fp_iteration__(current_graph, current_communities, two_m, two_m_sq)
-                if current_communities:
-                    current_communities = current_communities.checkpoint()
-
-                finish = time.perf_counter()
-
-                print(f"First phase - iteration {iteration} -- {finish - start} seconds")
-                iteration += 1
-
-        else:
-
-            for iteration in range(self.fp_max_iterations):
-
-                start = time.perf_counter()
-
-                current_communities = self.__fp_iteration__(current_graph, current_communities, two_m, two_m_sq)
-                if current_communities:
-                    current_communities = current_communities.checkpoint()
-
-                finish = time.perf_counter()
-
-                print(f"First phase - iteration {iteration} -- {finish - start} seconds")
-
-                if current_communities is None:
-                    break
-
-        self.k_i.unpersist()
-        self.k_i = None
+        # if self.fp_max_iterations == -1:
+        #
+        #     iteration = 0
+        #     while current_communities:
+        #
+        #         start = time.perf_counter()
+        #
+        #         current_communities = self.__fp_iteration__(current_graph, current_communities, two_m, two_m_sq)
+        #         if current_communities:
+        #             current_communities = current_communities.checkpoint()
+        #
+        #         finish = time.perf_counter()
+        #
+        #         print(f"First phase - iteration {iteration} -- {finish - start} seconds")
+        #         iteration += 1
+        #
+        # else:
+        #
+        #     for iteration in range(self.fp_max_iterations):
+        #
+        #         start = time.perf_counter()
+        #
+        #         current_communities = self.__fp_iteration__(current_graph, current_communities, two_m, two_m_sq)
+        #         if current_communities:
+        #             current_communities = current_communities.checkpoint()
+        #
+        #         finish = time.perf_counter()
+        #
+        #         print(f"First phase - iteration {iteration} -- {finish - start} seconds")
+        #
+        #         if current_communities is None:
+        #             break
+        #
+        # self.k_i.unpersist()
+        # self.k_i = None
 
     def __second_phase__(self, current_graph):
         print("Executing second phase ...")
