@@ -49,7 +49,7 @@ def construct_e_and_v(metadata_df):
                 f.array_join(f.col("authors_processed"), delimiter=" ").alias("author_name"))
 
     # authors_e.persist()
-    authors_e = authors_e.checkpoint()
+    # authors_e = authors_e.checkpoint()
 
     authors_e = authors_e.alias("left") \
         .join(authors_e.alias("right"),
@@ -61,7 +61,7 @@ def construct_e_and_v(metadata_df):
                 f.col("left.update_date")) \
         .where(f.col("src") != f.col("dst"))
 
-    authors_e = authors_e.checkpoint()
+    # authors_e = authors_e.checkpoint()
 
     authors_e = authors_e \
         .groupBy([f.col("src"), f.col("dst")]) \
@@ -137,7 +137,7 @@ if __name__ == '__main__':
     session = SparkSession \
         .builder \
         .appName("Preprocessing Main") \
-        .config("spark.executor.memory", "5g") \
+        .config("spark.executor.memory", "8g") \
         .getOrCreate()
         # .config("spark.driver.memory", "8g") \
 
