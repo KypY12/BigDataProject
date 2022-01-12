@@ -392,14 +392,14 @@ class Louvain:
                 .mode("overwrite") \
                 .json(f"{self.communities_save_path}/iter_{iteration}")
 
-            # current_graph = None
+            current_graph = None
 
-            new_graph = self.__second_phase__(current_graph)
-
-            if iteration > 0:
-                current_graph.unpersist()
-
-            current_graph = new_graph
+            # new_graph = self.__second_phase__(current_graph)
+            #
+            # if iteration > 0:
+            #     current_graph.unpersist()
+            #
+            # current_graph = new_graph
 
             finish = time.perf_counter()
             print(f"Louvain - iteration {iteration} -- {finish - start} seconds")
@@ -409,36 +409,3 @@ class Louvain:
                 break
 
 
-'''
-Pseudo-code :
-
-    First Phase:
-
-    current_partitions_df = [...]
-    new_partitions_df = []
-
-    for each node i:
-        k_i = sum of weights of node i
-
-        D = select node partition
-        k_i_D = compute k_i_D (excluding node i from D)
-
-        sum_tot_D = compute sum_tot_D (excluding i from D)
-
-        Cs = select node neighbouring partitions
-
-        max_delta_Q = -inf
-        max_index = -1
-        for each neigh_part in node_neigh_partitions:
-            k_i_C = compute current k_i_C
-            sum_tot_C = compute current sum_tot_C (excluding i from D)
-
-            delta_Q = compute delta_Q (final formula)
-            if delta_Q > max_delta_Q:
-                max_delta_Q = delta_Q
-                max_index = -1
-
-        if max_delta_Q > 0:
-            change partition of node i from D to Cs[max_index]
-
-'''

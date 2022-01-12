@@ -243,27 +243,21 @@ def testing_first_phase(g):
 if __name__ == '__main__':
     session.sparkContext.setCheckpointDir("../data/louvain_checkpoints_dir")
 
-    sample_size = 500
-    metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
+    # sample_size = 500
+    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(1_000_000)
+    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
     # metadata_df.show(20)
-    g = preprocess_data(metadata_df)
+    # g = preprocess_data(metadata_df)
 
     # write_coauthorship_graph(g, "../data/authors_graph")
 
-    # g = read_coauthorship_graph(session, "../data/authors_graph")
-    # g.edges.persist(StorageLevel(True, False, False, False, 2))
-    # print(metadata_df.count())
-    # print(g.vertices.count())
-    # print(g.edges.count())
-
-    # g.vertices.show()
-    # g.edges.orderBy("articles_count", ascending=False).show()
+    g = read_coauthorship_graph(session, "../data/authors_graph")
 
     louvain_alg = Louvain(g, session)
 
     louvain_alg.execute()
-    #
+
     # testing_first_phase(g)
 
     g.unpersist()

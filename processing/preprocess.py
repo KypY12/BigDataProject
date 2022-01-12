@@ -101,15 +101,15 @@ if __name__ == '__main__':
 
     session.sparkContext.setCheckpointDir("../data/checkpoint_dir")
 
-    sample_size = 1_500_000
-    metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
+    # sample_size = 1_500_000
+    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
 
-    g = preprocess_data(metadata_df)
+    # g = preprocess_data(metadata_df)
     # write_coauthorship_graph(g, "../data")
-    write_coauthorship_graph(g, "../data/authors_graph")
+    # write_coauthorship_graph(g, "../data/authors_graph")
 
-    # g = read_coauthorship_graph(session, "../data")
+    g = read_coauthorship_graph(session, "../data")
     # g = read_coauthorship_graph(session, "../data/authors_graph")
 
     g.vertices.show()
