@@ -45,13 +45,11 @@ def construct_e_and_v(metadata_df):
 
 
 def construct_coauthorship_graph(authors_v, authors_e):
-    import graphframes as gf
-
-    # try:
-    #     if "graphframes" not in sys.modules:
-    #         import graphframes as gf
-    # except:
-    #     print("Couldn't import graphframes package!")
+    try:
+        if "graphframes" not in sys.modules:
+            import graphframes as gf
+    except:
+        print("Couldn't import graphframes package!")
 
     g = gf.GraphFrame(authors_v, authors_e)
 
