@@ -65,8 +65,8 @@ if __name__ == '__main__':
         .groupBy(f.col("id_component")) \
         .agg(f.count(f.col("author")).alias("authors_count"),
              f.collect_list("author").alias("authors")) \
-        .orderBy("authors_count", ascending=False) \
- \
+        .orderBy("authors_count", ascending=False)
+
     grouped_authors_by_component.show()  # (truncate=False)
 
     current_graph = g
