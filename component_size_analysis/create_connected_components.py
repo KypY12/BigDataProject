@@ -29,6 +29,6 @@ if __name__ == '__main__':
         .mode("overwrite") \
         .parquet("../data/connected_components")
 
-    print("Connected components : ", components.gropuBy(f.col("component")).agg(f.col("component")).count())
+    print("Connected components : ", components.groupBy(f.col("component")).agg(f.col("component")).count())
 
-    print("Max connected component size : ", components.gropuBy(f.col("component")).count().agg(f.max("count")).collect())
+    print("Max connected component size : ", components.groupBy(f.col("component")).count().agg(f.max("count")).collect())
