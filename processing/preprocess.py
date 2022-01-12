@@ -102,9 +102,11 @@ if __name__ == '__main__':
     metadata_df = session.read.json(CLUSTER_DATA_PATH)
 
     g = preprocess_data(metadata_df)
-    write_coauthorship_graph(g, "../data/authors_graph")
+    # write_coauthorship_graph(g, LOCAL_WRITE_AUTHORS_PATH)
+    write_coauthorship_graph(g, CLUSTER_WRITE_AUTHORS_PATH)
 
-    # g = read_coauthorship_graph(session, "../data/authors_graph")
+    # g = read_coauthorship_graph(session, LOCAL_WRITE_AUTHORS_PATH)
+    # g = read_coauthorship_graph(session, CLUSTER_WRITE_AUTHORS_PATH)
 
     g.vertices.show()
     g.edges.show()
