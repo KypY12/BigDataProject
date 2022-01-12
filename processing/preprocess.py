@@ -154,7 +154,7 @@ if __name__ == '__main__':
     # g.vertices.show()
     # g.edges.show()
 
-    # print(f"Vertx Count : {g.vertices.count()}")
+    print(f"Vertx Count : {g.vertices.count()}")
     print(f"Edge Count : {g.edges.count()}")
 
     # write_coauthorship_graph(g, "../data/authors_graph")
