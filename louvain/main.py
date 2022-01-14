@@ -6,8 +6,8 @@ from component_size_analysis.create_connected_components import get_saved_connec
 session = SparkSession \
     .builder \
     .appName("Louvain run") \
-    .config("spark.executor.memory", "8.8g") \
-    .config("spark.driver.memory", "8.8g") \
+    .config("spark.executor.memory", "8.5g") \
+    .config("spark.driver.memory", "8.5g") \
     .getOrCreate()
 # .config("spark.driver.memory", "4g") \
 
