@@ -7,7 +7,7 @@ session = SparkSession \
     .config("spark.executor.memory", "8g") \
     .config("spark.driver.memory", "8g") \
     .getOrCreate()
-    # .config("spark.driver.memory", "4g") \
+# .config("spark.driver.memory", "4g") \
 
 from algorithm.louvain import Louvain
 from processing.preprocess import preprocess_data, write_coauthorship_graph, read_coauthorship_graph
