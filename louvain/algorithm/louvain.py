@@ -224,6 +224,7 @@ class Louvain:
             mt, single_node_communities = self.__compute_modularity_terms__(current_graph, current_communities)
         except Exception as e:
             print(e)
+            sys.exit()
 
         mt.show(30)
         print("FINAL")
