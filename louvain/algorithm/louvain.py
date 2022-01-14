@@ -130,7 +130,7 @@ class Louvain:
 
         mt.show(4)
         print("MT 1: ", mt.count())
-        comm_aux_df.unpersist()
+        # comm_aux_df.unpersist()
 
         mt = mt \
             .join(self.k_i.alias("k_i"),
@@ -211,8 +211,8 @@ class Louvain:
         print("MT1 COMM FUNCS")
 
         # comm_aux_df.unpersist()
-        k_i_C.unpersist()
-        sum_tot_C.unpersist()
+        # k_i_C.unpersist()
+        # sum_tot_C.unpersist()
 
         print("MT2 COMM FUNCS")
 
