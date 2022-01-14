@@ -6,7 +6,6 @@ session = SparkSession \
     .appName("Louvain run") \
     .config("spark.executor.memory", "8g") \
     .config("spark.driver.memory", "8g") \
-    .config("spark.sql.shuffle.partitions", "100") \
     .getOrCreate()
     # .config("spark.driver.memory", "4g") \
 
