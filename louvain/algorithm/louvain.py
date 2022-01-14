@@ -220,7 +220,10 @@ class Louvain:
 
     def __fp_iteration__(self, current_graph, current_communities, two_m, two_m_sq):
 
-        mt, single_node_communities = self.__compute_modularity_terms__(current_graph, current_communities)
+        try:
+            mt, single_node_communities = self.__compute_modularity_terms__(current_graph, current_communities)
+        except Exception as e:
+            print(e)
 
         mt.show(30)
         print("FINAL")
