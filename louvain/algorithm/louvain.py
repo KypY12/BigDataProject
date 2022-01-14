@@ -158,7 +158,7 @@ class Louvain:
         mt.show(4)
         print("MT 3: ", mt.count())
 
-        # mt = mt.checkpoint()
+        mt = mt.checkpoint()
 
         mt = mt \
             .join(k_i_C.alias("k_i_D"),
@@ -191,7 +191,7 @@ class Louvain:
         mt.show(4)
         print("MT 5: ", mt.count())
 
-        # mt = mt.checkpoint()
+        mt = mt.checkpoint()
 
         mt = mt \
             .join(sum_tot_C.alias("sum_tot_D"),
