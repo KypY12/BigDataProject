@@ -254,7 +254,7 @@ if __name__ == '__main__':
 
     # g = read_coauthorship_graph(session, "../data")
 
-    g = get_saved_connected_component_subgraph(session, 1)
+    g = get_saved_connected_component_subgraph(session, 2)
 
     g.vertices.show()
     g.edges.show()
