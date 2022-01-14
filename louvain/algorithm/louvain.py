@@ -124,7 +124,7 @@ class Louvain:
             .distinct() \
             .alias("mt")
 
-        mt.show(30)
+        mt.show(4)
         print("MT 1: ", mt.count())
 
         mt = mt \
@@ -135,10 +135,10 @@ class Louvain:
                     f.col("k_i.k_i")) \
             .alias("mt")
 
-        mt.show(30)
+        mt.show(4)
         print("MT 2: ", mt.count())
 
-        mt = mt.checkpoint()
+        # mt = mt.checkpoint()
 
         mt = mt \
             .join(k_i_C.alias("k_i_S"),
@@ -150,10 +150,10 @@ class Louvain:
                     f.col("k_i_S.k_i_C").alias("k_i_S")) \
             .alias("mt")
 
-        mt.show(30)
+        mt.show(4)
         print("MT 3: ", mt.count())
 
-        mt = mt.checkpoint()
+        # mt = mt.checkpoint()
 
         mt = mt \
             .join(k_i_C.alias("k_i_D"),
@@ -166,10 +166,10 @@ class Louvain:
                     f.col("k_i_D.k_i_C").alias("k_i_D")) \
             .alias("mt")
 
-        mt.show(30)
+        mt.show(4)
         print("MT 4: ", mt.count())
 
-        mt = mt.checkpoint()
+        # mt = mt.checkpoint()
 
         mt = mt \
             .join(sum_tot_C.alias("sum_tot_S"),
@@ -183,10 +183,10 @@ class Louvain:
                     f.col("sum_tot_S.sum_tot_C").alias("sum_tot_S")) \
             .alias("mt")
 
-        mt.show(30)
+        mt.show(4)
         print("MT 5: ", mt.count())
 
-        mt = mt.checkpoint()
+        # mt = mt.checkpoint()
 
         mt = mt \
             .join(sum_tot_C.alias("sum_tot_D"),
@@ -200,7 +200,7 @@ class Louvain:
                     f.col("mt.sum_tot_S"),
                     f.col("sum_tot_D.sum_tot_C").alias("sum_tot_D"))
 
-        mt.show(30)
+        mt.show(4)
         print("MT 6: ", mt.count())
 
         print("MT1 COMM FUNCS")
