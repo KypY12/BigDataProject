@@ -109,10 +109,14 @@ class Louvain:
                       f.col("community_dst").alias("C")]) \
             .agg(f.sum("articles_count").alias("k_i_C"))
 
+        k_i_C = k_i_C.persist()
+
         # Compute all sum_tot_S and sum_tot_D
         sum_tot_C = comm_aux_df \
             .groupBy(f.col("community_src").alias("C")) \
             .agg(f.sum("articles_count").alias("sum_tot_C"))
+
+        sum_tot_C = sum_tot_C.persist()
 
         print("compute COMM FUNCS")
 
@@ -170,6 +174,7 @@ class Louvain:
         print("MT 4: ", mt.count())
 
         # mt = mt.checkpoint()
+        k_i_C.unpersist()
 
         mt = mt \
             .join(sum_tot_C.alias("sum_tot_S"),

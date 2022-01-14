@@ -1,6 +1,8 @@
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as f
 
+from component_size_analysis.create_connected_components import get_saved_connected_component_subgraph
+
 session = SparkSession \
     .builder \
     .appName("Louvain run") \
@@ -250,7 +252,9 @@ if __name__ == '__main__':
 
     # write_coauthorship_graph(g, "../data/authors_graph")
 
-    g = read_coauthorship_graph(session, "../data")
+    # g = read_coauthorship_graph(session, "../data")
+
+    g = get_saved_connected_component_subgraph(session, 1)
 
     g.vertices.show()
     g.edges.show()
