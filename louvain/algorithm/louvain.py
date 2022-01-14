@@ -174,7 +174,6 @@ class Louvain:
         print("MT 4: ", mt.count())
 
         # mt = mt.checkpoint()
-        k_i_C.unpersist()
 
         mt = mt \
             .join(sum_tot_C.alias("sum_tot_S"),
