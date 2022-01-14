@@ -4,8 +4,8 @@ import pyspark.sql.functions as f
 session = SparkSession \
     .builder \
     .appName("Louvain run") \
-    .config("spark.executor.memory", "16g") \
-    .config("spark.driver.memory", "8g") \
+    .config("spark.executor.memory", "4g") \
+    .config("spark.driver.memory", "4g") \
     .getOrCreate()
 # .config("spark.driver.memory", "4g") \
 
