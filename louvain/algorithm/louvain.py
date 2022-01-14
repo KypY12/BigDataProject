@@ -152,7 +152,7 @@ class Louvain:
 
         mt.show(4)
         print("MT 3: ", mt.count())
-
+        mt.repartition()
         # mt = mt.checkpoint()
 
         mt = mt \
