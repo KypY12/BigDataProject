@@ -128,8 +128,8 @@ class Louvain:
             .distinct() \
             .alias("mt")
 
-        mt.show(4)
-        print("MT 1: ", mt.count())
+        mt.show(1)
+        # print("MT 1: ", mt.count())
         # comm_aux_df.unpersist()
 
         mt = mt \
@@ -140,8 +140,8 @@ class Louvain:
                     f.col("k_i.k_i")) \
             .alias("mt")
 
-        mt.show(4)
-        print("MT 2: ", mt.count())
+        mt.show(2)
+        # print("MT 2: ", mt.count())
 
         # mt = mt.checkpoint()
 
@@ -155,8 +155,8 @@ class Louvain:
                     f.col("k_i_S.k_i_C").alias("k_i_S")) \
             .alias("mt")
 
-        mt.show(4)
-        print("MT 3: ", mt.count())
+        mt.show(3)
+        # print("MT 3: ", mt.count())
 
         # mt = mt.checkpoint()
 
@@ -172,7 +172,7 @@ class Louvain:
             .alias("mt")
 
         mt.show(4)
-        print("MT 4: ", mt.count())
+        # print("MT 4: ", mt.count())
 
         # mt = mt.checkpoint()
 
@@ -188,8 +188,8 @@ class Louvain:
                     f.col("sum_tot_S.sum_tot_C").alias("sum_tot_S")) \
             .alias("mt")
 
-        mt.show(4)
-        print("MT 5: ", mt.count())
+        mt.show(5)
+        # print("MT 5: ", mt.count())
 
         # mt = mt.checkpoint()
 
@@ -205,14 +205,14 @@ class Louvain:
                     f.col("mt.sum_tot_S"),
                     f.col("sum_tot_D.sum_tot_C").alias("sum_tot_D"))
 
-        mt.show(4)
-        print("MT 6: ", mt.count())
+        mt.show(6)
+        # print("MT 6: ", mt.count())
 
         print("MT1 COMM FUNCS")
 
-        # comm_aux_df.unpersist()
-        # k_i_C.unpersist()
-        # sum_tot_C.unpersist()
+        comm_aux_df.unpersist()
+        k_i_C.unpersist()
+        sum_tot_C.unpersist()
 
         print("MT2 COMM FUNCS")
 
