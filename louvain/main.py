@@ -7,9 +7,9 @@ session = SparkSession \
     .builder \
     .appName("Louvain run") \
     .config("spark.executor.memory", "8g") \
-    .config("spark.executor.cores", "1") \
+    .config("spark.executor.cores", "5") \
+    .config("spark.driver.memory", "8g") \
     .getOrCreate()
-    # .config("spark.driver.memory", "8g") \
 # .config("spark.driver.memory", "4g") \
 
 from algorithm.louvain import Louvain
