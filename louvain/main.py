@@ -242,7 +242,7 @@ def testing_first_phase(g):
 
 
 if __name__ == '__main__':
-    session.sparkContext.setCheckpointDir("../data/louvain_checkpoints_dir")
+    # session.sparkContext.setCheckpointDir("../data/louvain_checkpoints_dir")
 
     # sample_size = 500
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
