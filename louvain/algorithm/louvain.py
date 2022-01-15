@@ -252,6 +252,9 @@ class Louvain:
             .agg(f.max("delta_Q").alias("max_delta_Q")) \
             .where(f.col("max_delta_Q") > 0)
 
+        mc = mc.persist()
+        # positive_max_mc = positive_max_mc.persist()
+
         print("PMMC1 finished")
         # positive_max_mc.show(40)
 
