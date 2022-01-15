@@ -7,6 +7,7 @@ session = SparkSession \
     .builder \
     .appName("Louvain run") \
     .config("spark.executor.memory", "8g") \
+    .config("spark.executor.cores", "5") \
     .getOrCreate()
     # .config("spark.driver.memory", "8g") \
 # .config("spark.driver.memory", "4g") \

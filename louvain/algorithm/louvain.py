@@ -143,7 +143,7 @@ class Louvain:
         mt.show(2)
         # print("MT 2: ", mt.count())
 
-        mt = mt.checkpoint()
+        # mt = mt.checkpoint()
 
         mt = mt \
             .join(k_i_C.alias("k_i_S"),
