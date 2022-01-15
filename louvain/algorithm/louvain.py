@@ -124,7 +124,7 @@ class Louvain:
         # | i | S_i | D_i | k_i | k_i_S | k_i_D | sum_tot_S | sum_tot_D |
         mt = comm_aux_df \
             .select(f.col("src"),
-                    f.col("community_src")) \
+                    f.col("community_src").alias("S_i")) \
             .distinct() \
             .alias("mt")
 
@@ -136,14 +136,14 @@ class Louvain:
             .join(self.k_i.alias("k_i"),
                   on=f.col("mt.src") == f.col("k_i.i")) \
             .select(f.col("k_i.i"),
-                    f.col("mt.community_src").alias("S_i"),
+                    f.col("mt.S_i"),
                     f.col("k_i.k_i")) \
             .alias("mt")
 
         mt.show(2)
         # print("MT 2: ", mt.count())
 
-        # mt = mt.checkpoint()
+        mt = mt.checkpoint()
 
         mt = mt \
             .join(k_i_C.alias("k_i_S"),
