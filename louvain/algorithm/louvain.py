@@ -127,7 +127,8 @@ class Louvain:
             .distinct() \
             .alias("mt")
 
-        mt.show(1)
+        print("MT 1")
+        # mt.show(1)
         # print("MT 1: ", mt.count())
         comm_aux_df.unpersist()
 
@@ -139,7 +140,8 @@ class Louvain:
                     f.col("k_i.k_i")) \
             .alias("mt")
 
-        mt.show(2)
+        print("MT 2")
+        # mt.show(2)
         # print("MT 2: ", mt.count())
 
         # mt = mt.checkpoint()
@@ -154,7 +156,8 @@ class Louvain:
                     f.col("k_i_S.k_i_C").alias("k_i_S")) \
             .alias("mt")
 
-        mt.show(3)
+        print("MT 3")
+        # mt.show(3)
         # print("MT 3: ", mt.count())
 
         # mt = mt.checkpoint()
@@ -170,7 +173,8 @@ class Louvain:
                     f.col("k_i_D.k_i_C").alias("k_i_D")) \
             .alias("mt")
 
-        mt.show(4)
+        print("MT 4")
+        # mt.show(4)
         # print("MT 4: ", mt.count())
 
         k_i_C.unpersist()
@@ -189,7 +193,8 @@ class Louvain:
                     f.col("sum_tot_S.sum_tot_C").alias("sum_tot_S")) \
             .alias("mt")
 
-        mt.show(5)
+        print("MT 5")
+        # mt.show(5)
         # print("MT 5: ", mt.count())
 
         # mt = mt.checkpoint()
@@ -206,10 +211,11 @@ class Louvain:
                     f.col("mt.sum_tot_S"),
                     f.col("sum_tot_D.sum_tot_C").alias("sum_tot_D"))
 
-        mt.show(6)
+        print("MT 6")
+        # mt.show(6)
         # print("MT 6: ", mt.count())
 
-        print("MT1 COMM FUNCS")
+        print("MT COMM FUNCS")
 
         sum_tot_C.unpersist()
         # comm_aux_df.unpersist()
@@ -217,7 +223,7 @@ class Louvain:
 
         mt = mt.persist()
 
-        print("MT2 COMM FUNCS")
+        print("MT return")
 
         return mt, single_node_communities
 
@@ -225,112 +231,119 @@ class Louvain:
 
         mt, single_node_communities = self.__compute_modularity_terms__(current_graph, current_communities)
 
-        mt.show(30)
-        print("FINAL")
-        print("FINAL: ", mt.count())
+        # mt.show(30)
+        # print("FINAL")
+        # print("FINAL: ", mt.count())
 
-        # # Compute modularity change (delta Q)
-        # mc = mt.withColumn("delta_Q",
-        #                    (f.col("k_i_D") - f.col("k_i_S")) / two_m + f.col("k_i") *
-        #                    (2 * (f.col("sum_tot_S") - f.col("sum_tot_D")) - f.col(
-        #                        "k_i")) / two_m_sq)
-        #
-        # print("MC1 finished")
-        # mt.unpersist()
-        # # print("MC2 finished")
-        # # mc.show()
-        #
-        # # Compute the strictly positive max value of modularity changes of each node i
-        # positive_max_mc = mc \
-        #     .groupBy("i") \
-        #     .agg(f.max("delta_Q").alias("max_delta_Q")) \
-        #     .where(f.col("max_delta_Q") > 0)
-        #
-        # print("PMMC1 finished")
-        # # positive_max_mc.show(40)
-        #
-        # # If there are no strictly positive modularity changes, then stop the first phase algorithm
-        # if not positive_max_mc.first():
-        #     positive_max_mc.unpersist()
-        #     mc.unpersist()
-        #     single_node_communities.unpersist()
-        #
-        #     self.first_phase_communities = current_communities
-        #     new_communities = None
-        #
-        # else:
-        #     positive_max_mc = positive_max_mc.alias("pmmc") \
-        #         .join(mc.alias("mc"),
-        #               [f.col("pmmc.i") == f.col("mc.i"),
-        #                f.col("pmmc.max_delta_Q") == f.col("mc.delta_Q")]) \
-        #         .select(f.col("pmmc.i"),
-        #                 f.col("mc.D_i"),
-        #                 f.col("pmmc.max_delta_Q")) \
-        #         .groupBy([f.col("i"),
-        #                   f.col("max_delta_Q")]) \
-        #         .agg(f.min("D_i").alias("D_i"))
-        #     # .dropDuplicates(["i", "max_delta_Q"])
-        #
-        #     print("PMMC2 finished")
-        #     # positive_max_mc.show(40)
-        #
-        #     mc.unpersist()
-        #
-        #     updated_communities_df = current_communities.alias("comm") \
-        #         .join(positive_max_mc.alias("pmmc"),
-        #               f.col("comm.id") == f.col("pmmc.i"),
-        #               how="left")
-        #
-        #     print("UCD1 finished")
-        #     # updated_communities_df.show()
-        #
-        #     current_communities.unpersist()
-        #     positive_max_mc.unpersist()
-        #
-        #     updated_communities_df = updated_communities_df.alias("ucd") \
-        #         .join(single_node_communities.alias("snc"),
-        #               f.col("ucd.community") == f.col("snc.community"),
-        #               how="left") \
-        #         .select(f.col("ucd.id"),
-        #                 f.col("ucd.community"),
-        #                 f.col("ucd.i"),
-        #                 f.col("ucd.D_i"),
-        #                 f.col("ucd.max_delta_Q"),
-        #                 f.col("snc.nodes_count").alias("is_old_comm_single")
-        #                 ) \
-        #         .alias("ucd") \
-        #         .join(single_node_communities.alias("snc"),
-        #               f.col("ucd.D_i") == f.col("snc.community"),
-        #               how="left") \
-        #         .select(f.col("ucd.id"),
-        #                 f.col("ucd.community"),
-        #                 f.col("ucd.i"),
-        #                 f.when((f.col("ucd.is_old_comm_single") == 1) &
-        #                        (f.col("snc.nodes_count") == 1) &
-        #                        (f.col("ucd.community") < f.col("ucd.D_i")),
-        #                        None)
-        #                 .otherwise(f.col("ucd.D_i")).alias("D_i"),
-        #                 f.col("ucd.max_delta_Q"))
-        #
-        #     print("UCD2 finished")
-        #     # updated_communities_df.show()
-        #
-        #     single_node_communities.unpersist()
-        #
-        #     new_communities = updated_communities_df \
-        #         .select(f.col("id"),
-        #                 f.when(f.col("D_i").isNotNull(),
-        #                        f.col("D_i"))
-        #                 .otherwise(f.col("community")).alias("community"))
-        #
-        #     print("NEW COMM finished")
-        #     new_communities.show()
-        #
-        #     updated_communities_df.unpersist()
-        #
-        #     new_communities = new_communities.persist()
-        #
-        # return new_communities
+        # Compute modularity change (delta Q)
+        mc = mt.withColumn("delta_Q",
+                           (f.col("k_i_D") - f.col("k_i_S")) / two_m + f.col("k_i") *
+                           (2 * (f.col("sum_tot_S") - f.col("sum_tot_D")) - f.col(
+                               "k_i")) / two_m_sq)
+
+        print("MC1 finished")
+        mt.unpersist()
+        # print("MC2 finished")
+        # mc.show()
+
+        # Compute the strictly positive max value of modularity changes of each node i
+        positive_max_mc = mc \
+            .groupBy("i") \
+            .agg(f.max("delta_Q").alias("max_delta_Q")) \
+            .where(f.col("max_delta_Q") > 0)
+
+        print("PMMC1 finished")
+        # positive_max_mc.show(40)
+
+        # If there are no strictly positive modularity changes, then stop the first phase algorithm
+        if not positive_max_mc.first():
+
+            print("NO MORE MODULARITY CHANGE")
+
+            positive_max_mc.unpersist()
+            mc.unpersist()
+            single_node_communities.unpersist()
+
+            self.first_phase_communities = current_communities
+            new_communities = None
+
+            print("RETURN NONE NEW COMMM")
+
+        else:
+            positive_max_mc = positive_max_mc.alias("pmmc") \
+                .join(mc.alias("mc"),
+                      [f.col("pmmc.i") == f.col("mc.i"),
+                       f.col("pmmc.max_delta_Q") == f.col("mc.delta_Q")]) \
+                .select(f.col("pmmc.i"),
+                        f.col("mc.D_i"),
+                        f.col("pmmc.max_delta_Q")) \
+                .groupBy([f.col("i"),
+                          f.col("max_delta_Q")]) \
+                .agg(f.min("D_i").alias("D_i"))
+            # .dropDuplicates(["i", "max_delta_Q"])
+
+            print("PMMC2 finished")
+            # positive_max_mc.show(40)
+
+            mc.unpersist()
+
+            updated_communities_df = current_communities.alias("comm") \
+                .join(positive_max_mc.alias("pmmc"),
+                      f.col("comm.id") == f.col("pmmc.i"),
+                      how="left")
+
+            print("UCD1 finished")
+            # updated_communities_df.show()
+
+            current_communities.unpersist()
+            positive_max_mc.unpersist()
+
+            updated_communities_df = updated_communities_df.alias("ucd") \
+                .join(single_node_communities.alias("snc"),
+                      f.col("ucd.community") == f.col("snc.community"),
+                      how="left") \
+                .select(f.col("ucd.id"),
+                        f.col("ucd.community"),
+                        f.col("ucd.i"),
+                        f.col("ucd.D_i"),
+                        f.col("ucd.max_delta_Q"),
+                        f.col("snc.nodes_count").alias("is_old_comm_single")
+                        ) \
+                .alias("ucd") \
+                .join(single_node_communities.alias("snc"),
+                      f.col("ucd.D_i") == f.col("snc.community"),
+                      how="left") \
+                .select(f.col("ucd.id"),
+                        f.col("ucd.community"),
+                        f.col("ucd.i"),
+                        f.when((f.col("ucd.is_old_comm_single") == 1) &
+                               (f.col("snc.nodes_count") == 1) &
+                               (f.col("ucd.community") < f.col("ucd.D_i")),
+                               None)
+                        .otherwise(f.col("ucd.D_i")).alias("D_i"),
+                        f.col("ucd.max_delta_Q"))
+
+            print("UCD2 finished")
+            # updated_communities_df.show()
+
+            single_node_communities.unpersist()
+
+            new_communities = updated_communities_df \
+                .select(f.col("id"),
+                        f.when(f.col("D_i").isNotNull(),
+                               f.col("D_i"))
+                        .otherwise(f.col("community")).alias("community"))
+
+            print("NEW COMM finished")
+            new_communities.show()
+
+            updated_communities_df.unpersist()
+
+            new_communities = new_communities.persist()
+
+            print("RETURN NEW COMM")
+
+        return new_communities
 
     def __first_phase__(self, m, current_graph):
         print("Executing first phase ...")
