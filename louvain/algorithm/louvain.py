@@ -26,15 +26,20 @@ class Louvain:
     def __init__(self,
                  graph,
                  session,
+                 component_name="",
                  max_iterations=-1,
                  fp_max_iterations=-1,
-                 communities_save_path="../data/louvain_communities"):
+                 # fp_communities_save_path="../data/louvain_communities/first_phase_checkpoint",
+                 # communities_save_path="../data/louvain_communities"
+                 ):
 
         self.max_iterations = max_iterations
         self.fp_max_iterations = fp_max_iterations
         self.original_graph = graph
 
-        self.communities_save_path = communities_save_path
+        self.component_name = component_name
+        self.communities_save_path = f"../data/louvain_communities_{component_name}"
+        self.fp_communities_save_path = f"../data/louvain_communities_{component_name}/first_phase"
 
         self.session = session
 
@@ -42,6 +47,19 @@ class Louvain:
 
         # First phase variables
         self.k_i = None
+
+    def write_df_to_path(self, df, path):
+        df.write \
+            .option("header", True) \
+            .mode("overwrite") \
+            .parquet(path)
+
+    def read_df_from_path(self, path):
+        return self.session.read.parquet(path)
+
+    def setup_checkpoint(self, df, path):
+        self.write_df_to_path(df, path)
+        return self.read_df_from_path(path)
 
     def __compute_modularity_terms__(self, current_graph, current_communities):
 
@@ -61,6 +79,9 @@ class Louvain:
             .select(f.col("com.id"),
                     f.col("com.community"))
 
+        # ***
+        single_node_communities_edges = single_node_communities_edges.persist()
+
         single_node_communities_edges = single_node_communities_edges.alias("snc1") \
             .join(single_node_communities_edges.alias("snc2"),
                   f.col("snc1.id") == f.col("snc2.id")) \
@@ -71,6 +92,7 @@ class Louvain:
                     f.lit(0).alias("articles_count"))
 
         print("SINGLE edges COMM FUNCS")
+        single_node_communities_edges = single_node_communities_edges.persist()
         # print(single_node_communities_edges.count())
         # single_node_communities_edges.show()
 
@@ -366,7 +388,10 @@ class Louvain:
 
                 current_communities = self.__fp_iteration__(current_graph, current_communities, two_m, two_m_sq)
                 if current_communities:
-                    current_communities = current_communities.checkpoint()
+                    current_communities = self.setup_checkpoint(current_communities, self.fp_communities_save_path)
+
+                # if current_communities:
+                #     current_communities = current_communities.checkpoint()
 
                 finish = time.perf_counter()
 
@@ -381,7 +406,10 @@ class Louvain:
 
                 current_communities = self.__fp_iteration__(current_graph, current_communities, two_m, two_m_sq)
                 if current_communities:
-                    current_communities = current_communities.checkpoint()
+                    current_communities = self.setup_checkpoint(current_communities, self.fp_communities_save_path)
+
+                # if current_communities:
+                #     current_communities = current_communities.checkpoint()
 
                 finish = time.perf_counter()
 
@@ -417,18 +445,16 @@ class Louvain:
                       f.col("dst_comm").alias("dst")]) \
             .agg(f.sum("articles_count").alias("articles_count"))
 
-        # new_e.show()
+        new_e.show()
 
+        new_g = None
         if new_e.first():
             new_v = current_communities.select(f.col("community").alias("id"))
 
             new_g = self.CurrentGraph(new_v, new_e)
             new_g = new_g.persist()
 
-            return new_g
-
-        else:
-            return None
+        return new_g
 
     def execute(self):
         print("Executing ...")
@@ -452,18 +478,19 @@ class Louvain:
                 .mode("overwrite") \
                 .json(f"{self.communities_save_path}/iter_{iteration}")
 
-            current_graph = None
+            # current_graph = None
 
-            # new_graph = self.__second_phase__(current_graph)
-            #
+            new_graph = self.__second_phase__(current_graph)
+
+            self.first_phase_communities.unpersist()
             # if iteration > 0:
-            #     current_graph.unpersist()
-            #
-            # current_graph = new_graph
+            current_graph.unpersist()
 
             finish = time.perf_counter()
             print(f"Louvain - iteration {iteration} -- {finish - start} seconds")
 
             iteration += 1
-            if self.max_iterations > 0 and iteration >= self.max_iterations:
+            if (self.max_iterations > 0 and iteration >= self.max_iterations) or new_graph is None:
                 break
+            else:
+                current_graph = new_graph.persist()

@@ -255,12 +255,14 @@ if __name__ == '__main__':
 
     # g = read_coauthorship_graph(session, "../data")
 
-    g = get_saved_connected_component_subgraph(session, 1)
+    component_id = 1
+
+    g = get_saved_connected_component_subgraph(session, component_id)
 
     g.vertices.show()
     g.edges.show()
 
-    louvain_alg = Louvain(g, session)
+    louvain_alg = Louvain(g, session, component_name=str(component_id))
 
     louvain_alg.execute()
 
