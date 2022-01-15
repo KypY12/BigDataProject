@@ -244,14 +244,11 @@ def testing_first_phase(g):
 if __name__ == '__main__':
     # session.sparkContext.setCheckpointDir("../data/louvain_checkpoints_dir")
 
-    # sample_size = 500
+    # sample_size = 100
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
-    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(1_000_000)
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
-    # metadata_df.show(20)
+    # metadata_df.show()
     # g = preprocess_data(metadata_df)
-
-    # write_coauthorship_graph(g, "../data/authors_graph")
 
     # g = read_coauthorship_graph(session, "../data")
 
@@ -264,7 +261,11 @@ if __name__ == '__main__':
 
     louvain_alg = Louvain(g, session, component_name=str(component_id))
 
-    louvain_alg.execute()
+    # louvain_alg.execute()
+
+    # louvain_alg.execute_first_phase("none")
+    louvain_alg.execute_first_phase(distinct_save_name="after17",
+                                    load_from_path="../data/louvain_communities_1/first_phase")
 
     # testing_first_phase(g)
 

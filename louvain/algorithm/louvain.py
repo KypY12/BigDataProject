@@ -3,7 +3,7 @@ import time
 
 import pyspark.sql
 import pyspark.sql.functions as f
-from pyspark.sql.types import StructType
+from pyspark.sql.types import StructType, StringType
 
 
 class Louvain:
@@ -28,9 +28,7 @@ class Louvain:
                  session,
                  component_name="",
                  max_iterations=-1,
-                 fp_max_iterations=-1,
-                 # fp_communities_save_path="../data/louvain_communities/first_phase_checkpoint",
-                 # communities_save_path="../data/louvain_communities"
+                 fp_max_iterations=-1
                  ):
 
         self.max_iterations = max_iterations
@@ -39,7 +37,7 @@ class Louvain:
 
         self.component_name = component_name
         self.communities_save_path = f"../data/louvain_communities_{component_name}"
-        self.fp_communities_save_path = f"../data/louvain_communities_{component_name}/first_phase"
+        self.fp_communities_save_path = f"../data/louvain_communities_{component_name}/first_phase_checkpoint"
 
         self.session = session
 
@@ -48,18 +46,15 @@ class Louvain:
         # First phase variables
         self.k_i = None
 
-    def write_df_to_path(self, df, path):
+    def setup_checkpoint(self, df, path):
         df.write \
             .option("header", True) \
             .mode("overwrite") \
             .parquet(path)
 
-    def read_df_from_path(self, path):
-        return self.session.read.parquet(path)
+        df.unpersist()
 
-    def setup_checkpoint(self, df, path):
-        self.write_df_to_path(df, path)
-        return self.read_df_from_path(path)
+        return self.session.read.parquet(path).persist()
 
     def __compute_modularity_terms__(self, current_graph, current_communities):
 
@@ -69,18 +64,11 @@ class Louvain:
 
         single_node_communities = single_node_communities.persist()
 
-        print("SINGLE nodes COMM FUNCS")
-        # print(single_node_communities.count())
-        # single_node_communities.show()
-
         single_node_communities_edges = single_node_communities \
             .join(current_communities.alias("com"),
                   single_node_communities["community"] == current_communities["community"]) \
             .select(f.col("com.id"),
                     f.col("com.community"))
-
-        # ***
-        single_node_communities_edges = single_node_communities_edges.persist()
 
         single_node_communities_edges = single_node_communities_edges.alias("snc1") \
             .join(single_node_communities_edges.alias("snc2"),
@@ -91,10 +79,7 @@ class Louvain:
                     f.col("snc2.community").alias("community_dst"),
                     f.lit(0).alias("articles_count"))
 
-        print("SINGLE edges COMM FUNCS")
         single_node_communities_edges = single_node_communities_edges.persist()
-        # print(single_node_communities_edges.count())
-        # single_node_communities_edges.show()
 
         # Construct an auxiliary table : [community_src, community_dst, src, dst, articles_count]
         comm_aux_df = current_graph.edges \
@@ -109,9 +94,7 @@ class Louvain:
             .select(f.col("community").alias("community_src"),
                     *comm_aux_df.columns)
 
-        print("AUX COMM FUNCS1")
         comm_aux_df = comm_aux_df.unionByName(single_node_communities_edges)
-        print("AUX COMM FUNCS2")
 
         comm_aux_df = comm_aux_df.persist()
         single_node_communities_edges.unpersist()
@@ -139,8 +122,6 @@ class Louvain:
 
         sum_tot_C = sum_tot_C.persist()
 
-        print("compute COMM FUNCS")
-
         # Compute modularity terms; a table with the following schema:
         # | i | S_i | D_i | k_i | k_i_S | k_i_D | sum_tot_S | sum_tot_D |
         mt = comm_aux_df \
@@ -149,9 +130,6 @@ class Louvain:
             .distinct() \
             .alias("mt")
 
-        print("MT 1")
-        # mt.show(1)
-        # print("MT 1: ", mt.count())
         comm_aux_df.unpersist()
 
         mt = mt \
@@ -162,12 +140,6 @@ class Louvain:
                     f.col("k_i.k_i")) \
             .alias("mt")
 
-        print("MT 2")
-        # mt.show(2)
-        # print("MT 2: ", mt.count())
-
-        # mt = mt.checkpoint()
-
         mt = mt \
             .join(k_i_C.alias("k_i_S"),
                   on=[f.col("mt.i") == f.col("k_i_S.i"),
@@ -177,12 +149,6 @@ class Louvain:
                     f.col("mt.k_i"),
                     f.col("k_i_S.k_i_C").alias("k_i_S")) \
             .alias("mt")
-
-        print("MT 3")
-        # mt.show(3)
-        # print("MT 3: ", mt.count())
-
-        # mt = mt.checkpoint()
 
         mt = mt \
             .join(k_i_C.alias("k_i_D"),
@@ -195,13 +161,7 @@ class Louvain:
                     f.col("k_i_D.k_i_C").alias("k_i_D")) \
             .alias("mt")
 
-        print("MT 4")
-        # mt.show(4)
-        # print("MT 4: ", mt.count())
-
         k_i_C.unpersist()
-
-        # mt = mt.checkpoint()
 
         mt = mt \
             .join(sum_tot_C.alias("sum_tot_S"),
@@ -215,12 +175,6 @@ class Louvain:
                     f.col("sum_tot_S.sum_tot_C").alias("sum_tot_S")) \
             .alias("mt")
 
-        print("MT 5")
-        # mt.show(5)
-        # print("MT 5: ", mt.count())
-
-        # mt = mt.checkpoint()
-
         mt = mt \
             .join(sum_tot_C.alias("sum_tot_D"),
                   on=f.col("mt.D_i") == f.col("sum_tot_D.C")) \
@@ -233,19 +187,9 @@ class Louvain:
                     f.col("mt.sum_tot_S"),
                     f.col("sum_tot_D.sum_tot_C").alias("sum_tot_D"))
 
-        print("MT 6")
-        # mt.show(6)
-        # print("MT 6: ", mt.count())
-
-        print("MT COMM FUNCS")
-
         sum_tot_C.unpersist()
-        # comm_aux_df.unpersist()
-        # k_i_C.unpersist()
 
         mt = mt.persist()
-
-        print("MT return")
 
         return mt, single_node_communities
 
@@ -253,20 +197,13 @@ class Louvain:
 
         mt, single_node_communities = self.__compute_modularity_terms__(current_graph, current_communities)
 
-        # mt.show(30)
-        # print("FINAL")
-        # print("FINAL: ", mt.count())
-
         # Compute modularity change (delta Q)
         mc = mt.withColumn("delta_Q",
                            (f.col("k_i_D") - f.col("k_i_S")) / two_m + f.col("k_i") *
                            (2 * (f.col("sum_tot_S") - f.col("sum_tot_D")) - f.col(
                                "k_i")) / two_m_sq)
 
-        print("MC1 finished")
         mt.unpersist()
-        # print("MC2 finished")
-        # mc.show()
 
         # Compute the strictly positive max value of modularity changes of each node i
         positive_max_mc = mc \
@@ -275,15 +212,13 @@ class Louvain:
             .where(f.col("max_delta_Q") > 0)
 
         mc = mc.persist()
-        # positive_max_mc = positive_max_mc.persist()
 
-        print("PMMC1 finished")
-        # positive_max_mc.show(40)
+        print("Positive Max Modularity Change checking")
 
         # If there are no strictly positive modularity changes, then stop the first phase algorithm
         if not positive_max_mc.first():
 
-            print("NO MORE MODULARITY CHANGE")
+            print("No Positive Max Modularity Change")
 
             positive_max_mc.unpersist()
             mc.unpersist()
@@ -291,8 +226,6 @@ class Louvain:
 
             self.first_phase_communities = current_communities
             new_communities = None
-
-            print("RETURN NONE NEW COMMM")
 
         else:
             positive_max_mc = positive_max_mc.alias("pmmc") \
@@ -307,18 +240,12 @@ class Louvain:
                 .agg(f.min("D_i").alias("D_i"))
             # .dropDuplicates(["i", "max_delta_Q"])
 
-            print("PMMC2 finished")
-            # positive_max_mc.show(40)
-
             mc.unpersist()
 
             updated_communities_df = current_communities.alias("comm") \
                 .join(positive_max_mc.alias("pmmc"),
                       f.col("comm.id") == f.col("pmmc.i"),
                       how="left")
-
-            print("UCD1 finished")
-            # updated_communities_df.show()
 
             current_communities.unpersist()
             positive_max_mc.unpersist()
@@ -348,8 +275,6 @@ class Louvain:
                         .otherwise(f.col("ucd.D_i")).alias("D_i"),
                         f.col("ucd.max_delta_Q"))
 
-            print("UCD2 finished")
-            # updated_communities_df.show()
             updated_communities_df = updated_communities_df.persist()
             single_node_communities.unpersist()
 
@@ -362,22 +287,24 @@ class Louvain:
             new_communities = new_communities.persist()
             updated_communities_df.unpersist()
 
-            print("NEW COMM finished")
+            print("New Communities")
             new_communities.show()
-
-            print("RETURN NEW COMM")
 
         return new_communities
 
-    def __first_phase__(self, m, current_graph):
+    def __first_phase__(self, m, current_graph, load_from_path=None):
         print("Executing first phase ...")
 
         two_m = 2 * m
         two_m_sq = two_m ** 2
 
         # Assign each node to its own community
-        current_communities = current_graph.vertices.withColumn("community", f.monotonically_increasing_id())
-        current_communities = current_communities.persist()
+        if load_from_path is None:
+            current_communities = current_graph.vertices \
+                .withColumn("community", f.monotonically_increasing_id()) \
+                .persist()
+        else:
+            current_communities = self.session.read.parquet(load_from_path).persist()
 
         if self.fp_max_iterations == -1:
 
@@ -389,9 +316,6 @@ class Louvain:
                 current_communities = self.__fp_iteration__(current_graph, current_communities, two_m, two_m_sq)
                 if current_communities:
                     current_communities = self.setup_checkpoint(current_communities, self.fp_communities_save_path)
-
-                # if current_communities:
-                #     current_communities = current_communities.checkpoint()
 
                 finish = time.perf_counter()
 
@@ -408,9 +332,6 @@ class Louvain:
                 if current_communities:
                     current_communities = self.setup_checkpoint(current_communities, self.fp_communities_save_path)
 
-                # if current_communities:
-                #     current_communities = current_communities.checkpoint()
-
                 finish = time.perf_counter()
 
                 print(f"First phase - iteration {iteration} -- {finish - start} seconds")
@@ -426,6 +347,8 @@ class Louvain:
 
         current_communities = self.first_phase_communities
 
+        current_communities = current_communities.withColumn("community_str", f.col("community").cast(StringType()))
+
         new_e = current_graph.edges \
             .select(f.col("src"),
                     f.col("dst"),
@@ -438,14 +361,12 @@ class Louvain:
             .select(f.col("src"),
                     f.col("dst"),
                     f.col("articles_count"),
-                    f.col("comms1.community").alias("src_comm"),
-                    f.col("comms2.community").alias("dst_comm")) \
+                    f.col("comms1.community_str").alias("src_comm"),
+                    f.col("comms2.community_str").alias("dst_comm")) \
             .where(f.col("src_comm") != f.col("dst_comm")) \
             .groupBy([f.col("src_comm").alias("src"),
                       f.col("dst_comm").alias("dst")]) \
             .agg(f.sum("articles_count").alias("articles_count"))
-
-        new_e.show()
 
         new_g = None
         if new_e.first():
@@ -490,7 +411,31 @@ class Louvain:
             print(f"Louvain - iteration {iteration} -- {finish - start} seconds")
 
             iteration += 1
-            if (self.max_iterations > 0 and iteration >= self.max_iterations) or new_graph is None:
+            if (0 < self.max_iterations <= iteration) or new_graph is None:
                 break
             else:
-                current_graph = new_graph.persist()
+                current_graph = new_graph
+
+    def execute_first_phase(self, distinct_save_name, load_from_path=None):
+        print("Executing ...")
+
+        current_graph = self.original_graph
+
+        start = time.perf_counter()
+
+        m = current_graph.edges \
+            .where(f.col("src") != f.col("dst")) \
+            .select(f.sum("articles_count").alias("articles_sum")).first()["articles_sum"]
+        m = m / 2
+
+        self.__first_phase__(m, current_graph, load_from_path)
+
+        self.first_phase_communities.write \
+            .option("header", True) \
+            .mode("overwrite") \
+            .json(f"{self.communities_save_path}/iter_{distinct_save_name}")
+
+        self.first_phase_communities.unpersist()
+
+        finish = time.perf_counter()
+        print(f"Louvain - first phase - {distinct_save_name} -- {finish - start} seconds")
