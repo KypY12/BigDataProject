@@ -52,7 +52,7 @@ class Louvain:
         single_node_communities = single_node_communities.persist()
 
         print("SINGLE nodes COMM FUNCS")
-        print(single_node_communities.count())
+        # print(single_node_communities.count())
         # single_node_communities.show()
 
         single_node_communities_edges = single_node_communities \
@@ -71,7 +71,7 @@ class Louvain:
                     f.lit(0).alias("articles_count"))
 
         print("SINGLE edges COMM FUNCS")
-        print(single_node_communities_edges.count())
+        # print(single_node_communities_edges.count())
         # single_node_communities_edges.show()
 
         # Construct an auxiliary table : [community_src, community_dst, src, dst, articles_count]
@@ -91,9 +91,8 @@ class Louvain:
         comm_aux_df = comm_aux_df.unionByName(single_node_communities_edges)
         print("AUX COMM FUNCS2")
 
-        single_node_communities_edges.unpersist()
-
         comm_aux_df = comm_aux_df.persist()
+        single_node_communities_edges.unpersist()
 
         # Compute all k_i (i is considered here the src node)
         # Needs to be computed once (each iteration's update doesn't change the values in this dataframe)
@@ -130,7 +129,7 @@ class Louvain:
 
         mt.show(1)
         # print("MT 1: ", mt.count())
-        # comm_aux_df.unpersist()
+        comm_aux_df.unpersist()
 
         mt = mt \
             .join(self.k_i.alias("k_i"),
@@ -174,6 +173,8 @@ class Louvain:
         mt.show(4)
         # print("MT 4: ", mt.count())
 
+        k_i_C.unpersist()
+
         # mt = mt.checkpoint()
 
         mt = mt \
@@ -210,9 +211,11 @@ class Louvain:
 
         print("MT1 COMM FUNCS")
 
-        comm_aux_df.unpersist()
-        k_i_C.unpersist()
         sum_tot_C.unpersist()
+        # comm_aux_df.unpersist()
+        # k_i_C.unpersist()
+
+        mt = mt.persist()
 
         print("MT2 COMM FUNCS")
 
