@@ -328,7 +328,7 @@ class Louvain:
 
             print("UCD2 finished")
             # updated_communities_df.show()
-
+            updated_communities_df = updated_communities_df.persist()
             single_node_communities.unpersist()
 
             new_communities = updated_communities_df \
@@ -337,12 +337,11 @@ class Louvain:
                                f.col("D_i"))
                         .otherwise(f.col("community")).alias("community"))
 
-            print("NEW COMM finished")
-            new_communities.show()
-
+            new_communities = new_communities.persist()
             updated_communities_df.unpersist()
 
-            new_communities = new_communities.persist()
+            print("NEW COMM finished")
+            new_communities.show()
 
             print("RETURN NEW COMM")
 
