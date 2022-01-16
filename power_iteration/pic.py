@@ -70,12 +70,12 @@ if __name__ == '__main__':
         .parquet(f"../data/pic_communities_{component_id}_{NUMBER_OF_CLUSTERS_PIC}_{MAX_ITERATIONS_PIC}")
 
     communities.show()
-    communities.unpersist()
 
     communities = session.read.parquet(
         f"../data/pic_communities_{component_id}_{NUMBER_OF_CLUSTERS_PIC}_{MAX_ITERATIONS_PIC}")
 
     communities.show()
 
+    communities.unpersist()
     edges_with_ids.unpersist()
     vertices_ids.unpersist()
