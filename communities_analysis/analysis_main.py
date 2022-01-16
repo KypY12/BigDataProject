@@ -21,7 +21,6 @@ def count_communities(communities_graph):
 
 # Get the number of authors in all the communities
 def count_authors_in_every_community(communities_graph):
-
     # Put in a list the authors which belongs to the same community
     grouped_authors_by_community = communities_graph \
         .groupBy(f.col("id_community")) \
@@ -62,8 +61,8 @@ if __name__ == "__main__":
     # communities = session.read.parquet("/user/data/lpa_communities_1").persist()
 
     # Communities found by Louvain after 111 iterations
-    # communities = session.read.parquet("/user/data/louvain_communities_1/first_phase_checkpoint").persist()
-    communities = session.read.parquet("/user/data/louvain_communities_2/first_phase_checkpoint").persist()
+    communities = session.read.parquet(f"/user/data/louvain_communities_{component_id}/first_phase_checkpoint") \
+        .persist()
     communities = communities.withColumnRenamed("id", "author").withColumnRenamed("community", "id_community")
 
     # Creates graph that joins the authors with the connected components
@@ -83,7 +82,8 @@ if __name__ == "__main__":
     counter_authors_in_every_community = count_authors_in_every_community(communities_graph=communities_data)
     counter_authors_in_every_community.show()
 
-    modularity_score_all_communities, modularity_score_per_community = get_modularity_score(communities_graph=communities_data)
+    modularity_score_all_communities, modularity_score_per_community = get_modularity_score(
+        communities_graph=communities_data)
 
     print("Modularity score per community:")
     modularity_score_per_community.show()
