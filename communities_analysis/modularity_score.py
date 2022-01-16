@@ -35,12 +35,10 @@ def __compute_sum_weight_inter_community_links_communities__(communities_graph):
 # Compute W_c of all the communities
 def __compute_sum_weight_intra_community_links_communities__(communities_graph):
 
-    # Put in a list the authors which belongs to the same community and count them
+    # Put in a list the authors which belongs to the same community
     grouped_authors_by_community = communities_graph \
         .groupBy(f.col("id_community")) \
-        .agg(f.count(f.col("author/src")).alias("authors_count"),
-             f.collect_list("author/src").alias("authors")) \
-        .orderBy("authors_count", ascending=False)
+        .agg(f.collect_set("author/src").alias("authors"))
 
     grouped_authors_by_community = grouped_authors_by_community.persist()
 
