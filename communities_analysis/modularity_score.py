@@ -87,12 +87,12 @@ def get_modularity_score(communities_graph):
 
     modularity_score_communities = modularity_score_communities.persist()
 
-    sum_weights_all_nodes_in_community.unpersist()
-    sum_weights_between_nodes_in_community.unpersist()
-
     modularity_score = modularity_score_communities \
         .select(f.sum(f.col("modularity_score")).alias("sum_modularity_scores")) \
         .first()["sum_modularity_scores"]
+
+    sum_weights_all_nodes_in_community.unpersist()
+    sum_weights_between_nodes_in_community.unpersist()
 
     return modularity_score, modularity_score_communities
 
@@ -124,7 +124,7 @@ def __compute_sum_weight_intra_community_links_biggest_community__(communities_g
         .where(f.col("id_community") == id_biggest_community) \
         .select(f.col("author/src"))
 
-    authors_biggest_community = authors_biggest_community.persist()
+    #authors_biggest_community = authors_biggest_community.persist()
 
     # Compute the sum of link weights between nodes in the biggest community
     W_c = communities_graph \
@@ -135,7 +135,7 @@ def __compute_sum_weight_intra_community_links_biggest_community__(communities_g
 
     W_c /= 2
 
-    authors_biggest_community.unpersist()
+    #authors_biggest_community.unpersist()
 
     return W_c
 
