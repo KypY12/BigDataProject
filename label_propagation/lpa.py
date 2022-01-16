@@ -1,5 +1,4 @@
-
-def find_communities_in_graph(graph, num_iterations_lpa=2):
+def find_communities_in_graph(graph, save_path, num_iterations_lpa=2):
     found_communities = graph.labelPropagation(maxIter=num_iterations_lpa)
 
     print("Finished0")
@@ -11,5 +10,10 @@ def find_communities_in_graph(graph, num_iterations_lpa=2):
     print("count1 : ", found_communities.count())
 
     found_communities = found_communities.persist()
+
+    found_communities.write \
+        .option("header", True) \
+        .mode("overwrite") \
+        .parquet(save_path)
 
     return found_communities

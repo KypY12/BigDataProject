@@ -11,7 +11,6 @@ import pyspark.sql.functions as f
 
 # Get number of all communities found
 def count_communities(communities_graph):
-
     num_communities = communities_graph \
         .select(f.col("id_community")).distinct() \
         .count()
@@ -21,7 +20,6 @@ def count_communities(communities_graph):
 
 # Get the number of nodes in all the communities
 def count_authors_in_every_community(communities_graph):
-
     num_authors_in_communities = communities_graph \
         .groupBy(f.col("id_community")) \
         .count() \
@@ -40,18 +38,18 @@ if __name__ == "__main__":
         .getOrCreate()
     # .config("spark.driver.memory", "8g") \
 
-    #Testing Locally
-    #sample_size = 500  # 15
-    #metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
-    #metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
+    # Testing Locally
+    # sample_size = 500  # 15
+    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
+    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
 
-    #first_component = preprocess_data(metadata_df)
+    # first_component = preprocess_data(metadata_df)
 
     component_id = 1
     first_component = get_saved_connected_component_subgraph(session, component_id)
 
-
-    communities = lpa.find_communities_in_graph(graph=first_component)
+    communities = lpa.find_communities_in_graph(graph=first_component,
+                                                save_path=f"../data/lpa_communities_{component_id}")
 
     print("comm count")
     print("Comm count : ", communities.count())
@@ -64,7 +62,7 @@ if __name__ == "__main__":
                 f.col("dst"),
                 f.col("articles_count"))
 
-    #communities_data = communities_data.persist()
+    # communities_data = communities_data.persist()
     communities_data.show()
 
     counter_communities = count_communities(communities_graph=communities_data)
