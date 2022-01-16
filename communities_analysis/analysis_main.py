@@ -55,15 +55,16 @@ if __name__ == "__main__":
     component_id = 2
     first_component = get_saved_connected_component_subgraph(session, component_id)
 
-    communities = lpa.find_communities_in_graph(graph=first_component,
-                                                save_path=f"../data/lpa_communities_{component_id}")
+    # communities = lpa.find_communities_in_graph(graph=first_component,
+    #                                             save_path=f"../data/lpa_communities_{component_id}")
 
     # Communities found by LPA after 2 iterations
     # communities = session.read.parquet("/user/data/lpa_communities_1").persist()
 
     # Communities found by Louvain after 111 iterations
     # communities = session.read.parquet("/user/data/louvain_communities_1/first_phase_checkpoint").persist()
-    # communities = communities.withColumnRenamed("id", "author").withColumnRenamed("community", "id_community")
+    communities = session.read.parquet("/user/data/louvain_communities_2/first_phase_checkpoint").persist()
+    communities = communities.withColumnRenamed("id", "author").withColumnRenamed("community", "id_community")
 
     # Creates graph that joins the authors with the connected components
     communities_data = communities \
