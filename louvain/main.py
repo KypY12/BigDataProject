@@ -21,7 +21,7 @@ if __name__ == '__main__':
     # g = preprocess_data(metadata_df)
     # g = read_coauthorship_graph(session, "../data")
 
-    component_id = 1
+    component_id = 2
 
     g = get_saved_connected_component_subgraph(session, component_id)
 
@@ -30,7 +30,9 @@ if __name__ == '__main__':
 
     louvain_alg = Louvain(g, session, component_name=str(component_id))
 
-    louvain_alg.execute_first_phase(distinct_save_name="after17",
-                                    load_from_path="../data/louvain_communities_1/first_phase")
+    # louvain_alg.execute_first_phase(distinct_save_name="after17",
+    #                                 load_from_path="../data/louvain_communities_1/first_phase")
+
+    louvain_alg.execute_first_phase(distinct_save_name=f"{component_id}")
 
     g.unpersist()
