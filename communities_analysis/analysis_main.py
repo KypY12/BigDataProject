@@ -35,7 +35,7 @@ if __name__ == "__main__":
     session = SparkSession \
         .builder \
         .appName("Communities Analysis") \
-        .config("spark.executor.memory", "8g") \
+        .config("spark.executor.memory", "7g") \
         .config("spark.executor.cores", "5") \
         .getOrCreate()
     # .config("spark.driver.memory", "8g") \
