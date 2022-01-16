@@ -53,6 +53,9 @@ if __name__ == "__main__":
 
     communities = lpa.find_communities_in_graph(graph=first_component)
 
+    print("comm count")
+    print("Comm count : ", communities.count())
+
     # Creates graph that joins the authors with the connected components
     communities_data = communities \
         .join(first_component.edges, communities["author"] == first_component.edges["src"]) \
