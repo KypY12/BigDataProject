@@ -46,8 +46,8 @@ if __name__ == "__main__":
 
     #first_component = preprocess_data(metadata_df)
 
-
-    first_component = get_saved_connected_component_subgraph(session, 1)
+    component_id = 1
+    first_component = get_saved_connected_component_subgraph(session, component_id)
 
 
     communities = lpa.find_communities_in_graph(graph=first_component)
@@ -78,5 +78,6 @@ if __name__ == "__main__":
     modularity_score_biggest_community = get_modularity_score_biggest_community(communities_graph=communities_data)
     print(f"Modularity score of the biggest community: {modularity_score_biggest_community}")
 
-    #modularity_score_per_community.unpersist()
-    #communities_data.unpersist()
+    communities.unpersit()
+    modularity_score_per_community.unpersist()
+    communities_data.unpersist()
