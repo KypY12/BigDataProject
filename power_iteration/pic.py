@@ -12,6 +12,7 @@ session = SparkSession \
     .appName(f"Power Iteration Clustering run clusters{NUMBER_OF_CLUSTERS_PIC}:max_iter{MAX_ITERATIONS_PIC}") \
     .config("spark.executor.memory", "8g") \
     .config("spark.executor.cores", "5") \
+    .config("spark.driver.memory", "8g") \
     .getOrCreate()
 
 # from processing.preprocess import preprocess_data
