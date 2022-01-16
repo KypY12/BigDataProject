@@ -5,7 +5,7 @@ from pyspark.sql import functions as f
 from component_size_analysis.create_connected_components import get_saved_connected_component_subgraph
 
 NUMBER_OF_CLUSTERS_PIC = 2
-MAX_ITERATIONS_PIC = 20
+MAX_ITERATIONS_PIC = 5
 
 session = SparkSession \
     .builder \
