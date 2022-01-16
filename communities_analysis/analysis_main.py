@@ -87,9 +87,9 @@ if __name__ == "__main__":
     # modularity_score_biggest_community = get_modularity_score_biggest_community(communities_graph=communities_data)
     # print(f"Modularity score of the biggest community: {modularity_score_biggest_community}")
     #
-    # communities.unpersit()
-    # modularity_score_per_community.unpersist()
-    # communities_data.unpersist()
-    #
     # radicchi_strong_score_all_communities = get_radicchi_strong_score(communities_graph=communities_data)
     # print(f"Radicchi Strong Score all communities : {radicchi_strong_score_all_communities}")
+    #
+    # modularity_score_per_community.unpersist()
+    # communities_data.unpersist()
+    # communities.unpersit()
