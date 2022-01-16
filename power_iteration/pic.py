@@ -10,7 +10,7 @@ MAX_ITERATIONS_PIC = 5
 session = SparkSession \
     .builder \
     .appName(f"Power Iteration Clustering run clusters{NUMBER_OF_CLUSTERS_PIC}:max_iter{MAX_ITERATIONS_PIC}") \
-    .config("spark.executor.memory", "8g") \
+    .config("spark.executor.memory", "10g") \
     .config("spark.executor.cores", "5") \
     .getOrCreate()
     # .config("spark.driver.memory", "1g") \
