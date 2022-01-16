@@ -1,4 +1,4 @@
-def find_communities_in_graph(graph, save_path, num_iterations_lpa=2):
+def find_communities_in_graph(graph, save_path, num_iterations_lpa=5):
     found_communities = graph.labelPropagation(maxIter=num_iterations_lpa)
 
     print("Finished0")
