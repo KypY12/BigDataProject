@@ -31,7 +31,8 @@ if __name__ == '__main__':
     g.edges.show()
 
     # Assing an integer id to vertices
-    vertices_ids = g.vertices.withColumn("node_id", f.monotonically_increasing_id()).persist()
+    vertices_ids = g.vertices.withColumn("node_id", f.monotonically_increasing_id()) \
+        # .persist()
 
     vertices_ids.show()
 
@@ -44,7 +45,7 @@ if __name__ == '__main__':
         .select(f.col("vids1.node_id").alias("src"),
                 f.col("vids2.node_id").alias("dst"),
                 f.col("edges.articles_count")) \
-        .persist()
+        # .persist()
 
     edges_with_ids.show()
 
@@ -55,17 +56,18 @@ if __name__ == '__main__':
                                    weightCol="articles_count")
 
     # Cluster data (find communities in the graph)
-    communities = pic.assignClusters(edges_with_ids).persist()
-    edges_with_ids.unpersist()
+    communities = pic.assignClusters(edges_with_ids)\
+        # .persist()
+    # edges_with_ids.unpersist()
 
     # Replace vertices integer id with their initial string id
     communities = communities.alias("comm") \
         .join(vertices_ids.alias("vids"),
               f.col("comm.id") == f.col("vids.node_id")) \
         .select(f.col("vids.id"),
-                f.col("comm.cluster").alias("community"))\
-        .persist()
-    vertices_ids.unpersist()
+                f.col("comm.cluster").alias("community")) \
+        # .persist()
+    # vertices_ids.unpersist()
 
     communities.write \
         .option("header", True) \
@@ -73,10 +75,9 @@ if __name__ == '__main__':
         .parquet(f"../data/pic_communities_{component_id}_{NUMBER_OF_CLUSTERS_PIC}_{MAX_ITERATIONS_PIC}")
 
     communities.show()
-    communities.unpersist()
+    # communities.unpersist()
 
     communities = session.read.parquet(
         f"../data/pic_communities_{component_id}_{NUMBER_OF_CLUSTERS_PIC}_{MAX_ITERATIONS_PIC}")
 
     communities.show()
-
