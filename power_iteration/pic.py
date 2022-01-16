@@ -56,6 +56,7 @@ if __name__ == '__main__':
 
     # Cluster data (find communities in the graph)
     communities = pic.assignClusters(edges_with_ids).persist()
+    edges_with_ids.unpersist()
 
     # Replace vertices integer id with their initial string id
     communities = communities.alias("comm") \
@@ -64,6 +65,7 @@ if __name__ == '__main__':
         .select(f.col("vids.id"),
                 f.col("comm.cluster").alias("community"))\
         .persist()
+    vertices_ids.unpersist()
 
     communities.write \
         .option("header", True) \
@@ -71,12 +73,10 @@ if __name__ == '__main__':
         .parquet(f"../data/pic_communities_{component_id}_{NUMBER_OF_CLUSTERS_PIC}_{MAX_ITERATIONS_PIC}")
 
     communities.show()
+    communities.unpersist()
 
     communities = session.read.parquet(
         f"../data/pic_communities_{component_id}_{NUMBER_OF_CLUSTERS_PIC}_{MAX_ITERATIONS_PIC}")
 
     communities.show()
 
-    communities.unpersist()
-    edges_with_ids.unpersist()
-    vertices_ids.unpersist()
