@@ -36,8 +36,8 @@ if __name__ == "__main__":
         .builder \
         .appName("Communities Analysis") \
         .config("spark.executor.memory", "8g") \
-        .config("spark.driver.memory", "8g") \
         .getOrCreate()
+    # .config("spark.driver.memory", "8g") \
 
     #Testing Locally
     #sample_size = 500  # 15
@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     #first_component = preprocess_data(metadata_df)
 
-    component_id = 2
+    component_id = 1
     first_component = get_saved_connected_component_subgraph(session, component_id)
 
 
