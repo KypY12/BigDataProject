@@ -40,15 +40,14 @@ if __name__ == "__main__":
         .getOrCreate()
 
     #Testing Locally
-    sample_size = 500  # 15
+    #sample_size = 500  # 15
     #metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
-    metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
+    #metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
 
-    first_component = preprocess_data(metadata_df)
+    #first_component = preprocess_data(metadata_df)
 
 
-    #first_component = get_saved_connected_component_subgraph(session, 1)
-
+    first_component = get_saved_connected_component_subgraph(session, 1)
 
 
     communities = lpa.find_communities_in_graph(graph=first_component)
