@@ -23,7 +23,7 @@ if __name__ == '__main__':
     # metadata_df.show()
     # g = preprocess_data(metadata_df)
 
-    component_id = 2
+    component_id = 1
 
     g = get_saved_connected_component_subgraph(session, component_id)
 
