@@ -63,6 +63,7 @@ if __name__ == "__main__":
 
     # Communities found by Louvain after 111 iterations
     communities = session.read.parquet("/user/data/louvain_communities_1/first_phase_checkpoint").persist()
+    communities = communities.withColumnRenamed("id", "author").withColumnRenamed("community", "id_community")
 
     # Creates graph that joins the authors with the connected components
     communities_data = communities \
