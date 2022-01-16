@@ -204,14 +204,13 @@ class Louvain:
                                "k_i")) / two_m_sq)
 
         mt.unpersist()
+        mc = mc.persist()
 
         # Compute the strictly positive max value of modularity changes of each node i
         positive_max_mc = mc \
             .groupBy("i") \
             .agg(f.max("delta_Q").alias("max_delta_Q")) \
             .where(f.col("max_delta_Q") > 0)
-
-        mc = mc.persist()
 
         print("Positive Max Modularity Change checking")
 
@@ -256,7 +255,6 @@ class Louvain:
                       how="left") \
                 .select(f.col("ucd.id"),
                         f.col("ucd.community"),
-                        f.col("ucd.i"),
                         f.col("ucd.D_i"),
                         f.col("ucd.max_delta_Q"),
                         f.col("snc.nodes_count").alias("is_old_comm_single")
@@ -267,7 +265,6 @@ class Louvain:
                       how="left") \
                 .select(f.col("ucd.id"),
                         f.col("ucd.community"),
-                        f.col("ucd.i"),
                         f.when((f.col("ucd.is_old_comm_single") == 1) &
                                (f.col("snc.nodes_count") == 1) &
                                (f.col("ucd.community") < f.col("ucd.D_i")),
@@ -399,12 +396,9 @@ class Louvain:
                 .mode("overwrite") \
                 .json(f"{self.communities_save_path}/iter_{iteration}")
 
-            # current_graph = None
-
             new_graph = self.__second_phase__(current_graph)
 
             self.first_phase_communities.unpersist()
-            # if iteration > 0:
             current_graph.unpersist()
 
             finish = time.perf_counter()
