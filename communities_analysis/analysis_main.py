@@ -60,7 +60,7 @@ if __name__ == "__main__":
                 f.col("dst"),
                 f.col("articles_count"))
 
-    communities_data = communities_data.persist()
+    #communities_data = communities_data.persist()
     communities_data.show()
 
     counter_communities = count_communities(communities_graph=communities_data)
@@ -78,5 +78,5 @@ if __name__ == "__main__":
     modularity_score_biggest_community = get_modularity_score_biggest_community(communities_graph=communities_data)
     print(f"Modularity score of the biggest community: {modularity_score_biggest_community}")
 
-    modularity_score_per_community.unpersist()
-    communities_data.unpersist()
+    #modularity_score_per_community.unpersist()
+    #communities_data.unpersist()

@@ -27,7 +27,7 @@ def __compute_sum_weight_inter_community_links_communities__(communities_graph):
         .agg((f.sum(f.col("articles_count")) / 2).alias("articles_count_of_community")) \
         .orderBy("articles_count_of_community", ascending=False)
 
-    sum_weights_all_nodes_in_community = sum_weights_all_nodes_in_community.persist()
+    #sum_weights_all_nodes_in_community = sum_weights_all_nodes_in_community.persist()
 
     return sum_weights_all_nodes_in_community
 
@@ -42,7 +42,7 @@ def __compute_sum_weight_intra_community_links_communities__(communities_graph):
              f.collect_list("author/src").alias("authors")) \
         .orderBy("authors_count", ascending=False)
 
-    grouped_authors_by_community = grouped_authors_by_community.persist()
+    #grouped_authors_by_community = grouped_authors_by_community.persist()
 
     # Creates graph that joins the authors lists with the communities and authors
     intra_communities_data = communities_graph \
@@ -54,7 +54,7 @@ def __compute_sum_weight_intra_community_links_communities__(communities_graph):
                 f.col("articles_count")) \
         .where(f.array_contains(f.col("authors"), f.col("dst")))
 
-    intra_communities_data = intra_communities_data.persist()
+    #intra_communities_data = intra_communities_data.persist()
 
     # Compute the sum of link weights between nodes in communities
     sum_weights_between_nodes_in_community = intra_communities_data \
@@ -63,10 +63,10 @@ def __compute_sum_weight_intra_community_links_communities__(communities_graph):
         .agg((f.sum(f.col("articles_count")) / 2).alias("articles_count_in_community")) \
         .orderBy("articles_count_in_community", ascending=False)
 
-    sum_weights_between_nodes_in_community = sum_weights_between_nodes_in_community.persist()
+    #sum_weights_between_nodes_in_community = sum_weights_between_nodes_in_community.persist()
 
-    grouped_authors_by_community.unpersist()
-    intra_communities_data.unpersist()
+    #grouped_authors_by_community.unpersist()
+    #intra_communities_data.unpersist()
 
     return sum_weights_between_nodes_in_community
 
@@ -85,14 +85,14 @@ def get_modularity_score(communities_graph):
                  (f.col("articles_count_of_community") / (2 * total_weight)) ** 2).alias("modularity_score")) \
         .orderBy("modularity_score", ascending=False)
 
-    modularity_score_communities = modularity_score_communities.persist()
+    #modularity_score_communities = modularity_score_communities.persist()
 
     modularity_score = modularity_score_communities \
         .select(f.sum(f.col("modularity_score")).alias("sum_modularity_scores")) \
         .first()["sum_modularity_scores"]
 
-    sum_weights_all_nodes_in_community.unpersist()
-    sum_weights_between_nodes_in_community.unpersist()
+    #sum_weights_all_nodes_in_community.unpersist()
+    #sum_weights_between_nodes_in_community.unpersist()
 
     return modularity_score, modularity_score_communities
 
