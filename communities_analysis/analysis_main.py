@@ -55,11 +55,13 @@ if __name__ == "__main__":
     component_id = 1
     first_component = get_saved_connected_component_subgraph(session, component_id)
 
-    communities = lpa.find_communities_in_graph(graph=first_component,
-                                                save_path=f"../data/lpa_communities_{component_id}")
+    # communities = lpa.find_communities_in_graph(graph=first_component,
+    #                                             save_path=f"../data/lpa_communities_{component_id}")
+    #
+    # print("comm count")
+    # print("Comm count : ", communities.count())
 
-    print("comm count")
-    print("Comm count : ", communities.count())
+    communities = session.read.parquet("/user/data/lpa_communities_1").persist()
 
     # Creates graph that joins the authors with the connected components
     communities_data = communities \
@@ -69,7 +71,7 @@ if __name__ == "__main__":
                 f.col("dst"),
                 f.col("articles_count"))
 
-    # communities_data = communities_data.persist()
+    communities_data = communities_data.persist()
     communities_data.show()
 
     counter_communities = count_communities(communities_graph=communities_data)
@@ -78,18 +80,18 @@ if __name__ == "__main__":
     counter_authors_in_every_community = count_authors_in_every_community(communities_graph=communities_data)
     counter_authors_in_every_community.show()
 
-    # modularity_score_all_communities, modularity_score_per_community = get_modularity_score(communities_graph=communities_data)
-    #
-    # print("Modularity score per community:")
-    # modularity_score_per_community.show()
-    # print(f"Modularity score all communities : {modularity_score_all_communities}")
-    #
+    modularity_score_all_communities, modularity_score_per_community = get_modularity_score(communities_graph=communities_data)
+
+    print("Modularity score per community:")
+    modularity_score_per_community.show()
+    print(f"Modularity score all communities : {modularity_score_all_communities}")
+
     # modularity_score_biggest_community = get_modularity_score_biggest_community(communities_graph=communities_data)
     # print(f"Modularity score of the biggest community: {modularity_score_biggest_community}")
-    #
-    # radicchi_strong_score_all_communities = get_radicchi_strong_score(communities_graph=communities_data)
-    # print(f"Radicchi Strong Score all communities : {radicchi_strong_score_all_communities}")
-    #
-    # modularity_score_per_community.unpersist()
-    # communities_data.unpersist()
-    # communities.unpersit()
+
+    radicchi_strong_score_all_communities = get_radicchi_strong_score(communities_graph=communities_data)
+    print(f"Radicchi Strong Score all communities : {radicchi_strong_score_all_communities}")
+
+    modularity_score_per_community.unpersist()
+    communities_data.unpersist()
+    communities.unpersit()
