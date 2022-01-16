@@ -10,9 +10,9 @@ MAX_ITERATIONS_PIC = 5
 session = SparkSession \
     .builder \
     .appName(f"Power Iteration Clustering run clusters{NUMBER_OF_CLUSTERS_PIC}:max_iter{MAX_ITERATIONS_PIC}") \
-    .config("spark.executor.memory", "8g") \
+    .config("spark.executor.memory", "7g") \
     .config("spark.executor.cores", "5") \
-    .config("spark.driver.memory", "8g") \
+    .config("spark.driver.memory", "1g") \
     .getOrCreate()
 
 # from processing.preprocess import preprocess_data
@@ -26,6 +26,7 @@ if __name__ == '__main__':
     component_id = 1
 
     g = get_saved_connected_component_subgraph(session, component_id)
+    g.persist()
 
     g.vertices.show()
     g.edges.show()
