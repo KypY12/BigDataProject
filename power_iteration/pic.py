@@ -55,7 +55,7 @@ if __name__ == '__main__':
                                    weightCol="articles_count")
 
     # Cluster data (find communities in the graph)
-    communities = pic.assignClusters(edges_with_ids)
+    communities = pic.assignClusters(edges_with_ids).persist()
 
     # Replace vertices integer id with their initial string id
     communities = communities.alias("comm") \
