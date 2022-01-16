@@ -136,5 +136,7 @@ dmypy.json
 /data/original/arxiv-metadata-oai-snapshot.json
 /data/checkpoint_dir
 /data/authors_graph
+/data/single-node-analysis
+/data
 /.idea
 

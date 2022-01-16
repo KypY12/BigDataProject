@@ -23,7 +23,8 @@ def __count_authors_inter_community_links_communities__(communities_graph, group
         .drop(grouped_authors_by_community["id_community"]) \
         .select(f.col("id_community"),
                 f.col("author/src"),
-                f.col("dst")) \
+                f.col("dst"),
+                f.col("articles_count")) \
         .where(f.array_contains(f.col("authors"), f.col("dst")) == False)
 
     inter_communities_data = inter_communities_data.persist()
@@ -31,7 +32,7 @@ def __count_authors_inter_community_links_communities__(communities_graph, group
     # Count the connections outer the community for every author
     num_connections_authors_out_community = inter_communities_data \
         .groupBy(f.col("author/src")) \
-        .agg(f.count("dst").alias("outer_connections_counter"))
+        .agg((f.sum(f.col("articles_count")) / 2).alias("outer_connections_counter"))
 
     num_connections_authors_out_community = num_connections_authors_out_community.persist()
 
@@ -50,7 +51,8 @@ def __count_authors_intra_community_links_communities__(communities_graph, group
         .drop(grouped_authors_by_community["id_community"]) \
         .select(f.col("id_community"),
                 f.col("author/src"),
-                f.col("dst")) \
+                f.col("dst"),
+                f.col("articles_count")) \
         .where(f.array_contains(f.col("authors"), f.col("dst")) == True)
 
     intra_communities_data = intra_communities_data.persist()
@@ -58,7 +60,7 @@ def __count_authors_intra_community_links_communities__(communities_graph, group
     # Count the connections within the community for every author
     num_connections_authors_in_community = intra_communities_data \
         .groupBy(f.col("author/src")) \
-        .agg(f.count("dst").alias("within_connections_counter")) \
+        .agg((f.sum(f.col("articles_count")) / 2).alias("within_connections_counter")) \
 
     num_connections_authors_in_community = num_connections_authors_in_community.persist()
 
