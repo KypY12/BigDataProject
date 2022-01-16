@@ -21,7 +21,7 @@ if __name__ == '__main__':
     # g = preprocess_data(metadata_df)
     # g = read_coauthorship_graph(session, "../data")
 
-    component_id = 2
+    component_id = 3
 
     g = get_saved_connected_component_subgraph(session, component_id)
 
