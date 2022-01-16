@@ -49,6 +49,8 @@ if __name__ == '__main__':
 
     edges_with_ids.show()
 
+    g.unpersist()
+
     # Create PIC model
     pic = PowerIterationClustering(k=NUMBER_OF_CLUSTERS_PIC,
                                    maxIter=MAX_ITERATIONS_PIC,
