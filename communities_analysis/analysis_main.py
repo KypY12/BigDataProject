@@ -70,15 +70,15 @@ if __name__ == "__main__":
     counter_authors_in_every_community = count_authors_in_every_community(communities_graph=communities_data)
     counter_authors_in_every_community.show()
 
-    modularity_score_all_comunities, modularity_score_per_community = get_modularity_score(communities_graph=communities_data)
-
-    print("Modularity score per community:")
-    modularity_score_per_community.show()
-    print(f"Modularity score all communities : {modularity_score_all_comunities}")
-
-    modularity_score_biggest_community = get_modularity_score_biggest_community(communities_graph=communities_data)
-    print(f"Modularity score of the biggest community: {modularity_score_biggest_community}")
-
-    communities.unpersit()
-    modularity_score_per_community.unpersist()
-    communities_data.unpersist()
+    # modularity_score_all_comunities, modularity_score_per_community = get_modularity_score(communities_graph=communities_data)
+    #
+    # print("Modularity score per community:")
+    # modularity_score_per_community.show()
+    # print(f"Modularity score all communities : {modularity_score_all_comunities}")
+    #
+    # modularity_score_biggest_community = get_modularity_score_biggest_community(communities_graph=communities_data)
+    # print(f"Modularity score of the biggest community: {modularity_score_biggest_community}")
+    #
+    # communities.unpersit()
+    # modularity_score_per_community.unpersist()
+    # communities_data.unpersist()
