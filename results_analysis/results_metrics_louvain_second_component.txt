@@ -1,0 +1,43 @@
+:: loading settings :: url = jar:file:/usr/local/spark/jars/ivy-2.5.0.jar!/org/apache/ivy/core/settings/ivysettings.xml
++------------+--------------------+--------------------+--------------+
+|id_community|          author/src|                 dst|articles_count|
++------------+--------------------+--------------------+--------------+
+|           0|Coughlin S. B.  A...|Barclay S. E.  AN...|             1|
+|           0|Coughlin S. B.  A...|Blair R. M.  ANTA...|             1|
+|           0|Coughlin S. B.  A...|Forsyth S. S.  AN...|             1|
+|           0|Coughlin S. B.  A...|Gair J. R.  ANTAR...|             1|
+|           0|Coughlin S. B.  A...|Whiting B. F.  AN...|             1|
+|           0|Herve A. E.  ANTA...|Bertin V.  ANTARE...|             1|
+|           0|Herve A. E.  ANTA...|Brancus I.  ANTAR...|             1|
+|           0|Herve A. E.  ANTA...|Cadonati L.  ANTA...|             1|
+|           0|Herve A. E.  ANTA...|Kang G.  ANTARES,...|             1|
+|           0|Herve A. E.  ANTA...|Merzougui M.  ANT...|             1|
+|           0|Herve A. E.  ANTA...|Mukherjee S.  ANT...|             1|
+|           0|Herve A. E.  ANTA...|Nichols D.  ANTAR...|             1|
+|           0|Herve A. E.  ANTA...|Quel E. J.  ANTAR...|             1|
+|           0|Herve A. E.  ANTA...|Sampson L. M.  AN...|             1|
+|           0|Herve A. E.  ANTA...|Sorrentino F.  AN...|             1|
+|           0|Herve A. E.  ANTA...|Stossl A.  ANTARE...|             1|
+|           0|Herve A. E.  ANTA...|Talukder D.  ANTA...|             1|
+|           0|Herve A. E.  ANTA...|Trini M.  ANTARES...|             1|
+|           0|Kim W.  ANTARES, ...|Cazon L.  ANTARES...|             1|
+|           0|Kim W.  ANTARES, ...|Covas P. B.  ANTA...|             1|
++------------+--------------------+--------------------+--------------+
+only showing top 20 rows
+
+Number communities found : 1
++------------+-------------+
+|id_community|authors_count|
++------------+-------------+
+|           0|         1937|
++------------+-------------+
+
+Modularity score per community:
++------------+----------------+
+|id_community|modularity_score|
++------------+----------------+
+|           0|            0.75|
++------------+----------------+
+
+Modularity score all communities : 0.75
+Radicchi Strong Score all communities : None

@@ -1,0 +1,5 @@
+:: loading settings :: url = jar:file:/usr/local/spark/jars/ivy-2.5.0.jar!/org/apache/ivy/core/settings/ivysettings.xml
+Clustering Coefficient of the Component 2: 0.0010325245224574102
+
+Clustering Coefficient of the Graph Random Generated similar to Component 2: 0.0010325245224574095
+

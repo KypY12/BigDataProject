@@ -1,0 +1,55 @@
+:: loading settings :: url = jar:file:/usr/local/spark/jars/ivy-2.5.0.jar!/org/apache/ivy/core/settings/ivysettings.xml
++--------------------+
+|                  id|
++--------------------+
+| Abir Abu Saleh Md. |
+|  Abukhalil Sumayya |
+|     Agorram Fatima |
+|    Aguilera Marcos |
+|    Ahmadian Yashar |
+|Ajhar Edward A.  ...|
+|        Akimitsu J. |
+|Akiyama Masayuki ...|
+|Al-Nabhan Najla A...|
+|Alarcon R.  Corre...|
+|Almeida C. Ramos ...|
+|Alonso-Izquierdo A. |
+|        An Shuoming |
+|   Andres R. Torres |
+|          Anulli F. |
+|      Appelbe Brian |
+|        Aref Hassan |
+|           Arenou F |
+|        Ariki Yasuo |
+|    Arrigoni Matías |
++--------------------+
+only showing top 20 rows
+
++----------------+--------------------+--------------+
+|             src|                 dst|articles_count|
++----------------+--------------------+--------------+
+|   Ajaltouni Z. |-Menzemer S. Hans...|             1|
+|       Marks J. |-Menzemer S. Hans...|             1|
+|        Mous I. |-Menzemer S. Hans...|             1|
+|   Shcheglov Y. |-Menzemer S. Hans...|             1|
+|       Smith E. |-Menzemer S. Hans...|             1|
+|    Spradlin P. |-Menzemer S. Hans...|             1|
+|  Appleby R. B. |-Menzemer S. Hans...|             1|
+|       Contu A. |-Menzemer S. Hans...|             1|
+|     Dovbnya A. |-Menzemer S. Hans...|             1|
+|     Graugés E. |-Menzemer S. Hans...|             1|
+|     Kaballo M. |-Menzemer S. Hans...|             1|
+|   La Thi V. N. |-Menzemer S. Hans...|             1|
+|       Manca G. |-Menzemer S. Hans...|             1|
+|Prisciandaro J. |-Menzemer S. Hans...|             1|
+|     Rinnert K. |-Menzemer S. Hans...|             1|
+|    Salzmann C. |-Menzemer S. Hans...|             1|
+|      Borghi S. |-Menzemer S. Hans...|             1|
+|     Hopchev P. |-Menzemer S. Hans...|             1|
+|  Mangiafave N. |-Menzemer S. Hans...|             1|
+|  Schmelling M. |-Menzemer S. Hans...|             1|
++----------------+--------------------+--------------+
+only showing top 20 rows
+
+Component vertices : 1270413
+Component edges : 105965870

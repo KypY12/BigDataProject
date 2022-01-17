@@ -1,0 +1,7 @@
+:: loading settings :: url = jar:file:/usr/local/spark/jars/ivy-2.5.0.jar!/org/apache/ivy/core/settings/ivysettings.xml
+Number of connected components :  111725
+Number of single-node components :  51530
+Number of multiple-node components :  60195
+Number of components with at least 10 nodes :  2523
+Number of components with at least 100 nodes :  152
+Number of components with at least 1000 nodes :  6
