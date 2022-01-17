@@ -18,21 +18,21 @@ from igraph import Graph
 # Generate random graph with same number of authors and connections
 def create_random_graph(num_authors, num_connections):
 
-    graph_generated_random = Graph.Erdos_Renyi(n=num_authors, m=num_connections)
-
-    vertices_graph_generated_random = np.array(graph_generated_random.vs.indices)
-    df_vertices = pd.DataFrame(data=vertices_graph_generated_random, columns=["id"])
-
-    df_edges = graph_generated_random.get_edge_dataframe()
-    df_edges.columns = ['src', 'dst']
-
-    # graph_generated_random = dense_gnm_random_graph(n=num_authors, m=num_connections)
+    # graph_generated_random = Graph.Erdos_Renyi(n=num_authors, m=num_connections)
     #
-    # vertices_graph_generated_random = np.array(graph_generated_random.nodes)
-    # edges_graph_generated_random = np.array(graph_generated_random.edges)
-    #
+    # vertices_graph_generated_random = np.array(graph_generated_random.vs.indices)
     # df_vertices = pd.DataFrame(data=vertices_graph_generated_random, columns=["id"])
-    # df_edges = pd.DataFrame(data=edges_graph_generated_random, columns=["src", "dst"])
+    #
+    # df_edges = graph_generated_random.get_edge_dataframe()
+    # df_edges.columns = ['src', 'dst']
+
+    graph_generated_random = dense_gnm_random_graph(n=num_authors, m=num_connections)
+
+    vertices_graph_generated_random = np.array(graph_generated_random.nodes)
+    edges_graph_generated_random = np.array(graph_generated_random.edges)
+
+    df_vertices = pd.DataFrame(data=vertices_graph_generated_random, columns=["id"])
+    df_edges = pd.DataFrame(data=edges_graph_generated_random, columns=["src", "dst"])
 
     vertices_random_graph = session.createDataFrame(data=df_vertices)
     edges_random_graph = session.createDataFrame(data=df_edges)
