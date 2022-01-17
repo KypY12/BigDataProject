@@ -12,18 +12,27 @@ from pyspark.sql.types import LongType
 import pyspark.sql.functions as f
 
 from networkx.generators.random_graphs import dense_gnm_random_graph, gnp_random_graph
+from igraph import Graph
 
 
 # Generate random graph with same number of authors and connections
 def create_random_graph(num_authors, num_connections):
 
-    graph_generated_random = dense_gnm_random_graph(n=num_authors, m=num_connections)
+    graph_generated_random = Graph.Erdos_Renyi(n=num_authors, m=num_connections)
 
-    vertices_graph_generated_random = np.array(graph_generated_random.nodes)
-    edges_graph_generated_random = np.array(graph_generated_random.edges)
-
+    vertices_graph_generated_random = np.array(graph_generated_random.vs.indices)
     df_vertices = pd.DataFrame(data=vertices_graph_generated_random, columns=["id"])
-    df_edges = pd.DataFrame(data=edges_graph_generated_random, columns=["src", "dst"])
+
+    df_edges = graph_generated_random.get_edge_dataframe()
+    df_edges.columns = ['src', 'dst']
+
+    # graph_generated_random = dense_gnm_random_graph(n=num_authors, m=num_connections)
+    #
+    # vertices_graph_generated_random = np.array(graph_generated_random.nodes)
+    # edges_graph_generated_random = np.array(graph_generated_random.edges)
+    #
+    # df_vertices = pd.DataFrame(data=vertices_graph_generated_random, columns=["id"])
+    # df_edges = pd.DataFrame(data=edges_graph_generated_random, columns=["src", "dst"])
 
     vertices_random_graph = session.createDataFrame(data=df_vertices)
     edges_random_graph = session.createDataFrame(data=df_edges)
@@ -43,18 +52,18 @@ def create_random_graph(num_authors, num_connections):
 if __name__ == "__main__":
     session = SparkSession \
         .builder \
-        .appName("Communities Analysis") \
+        .appName("Small World Analysis") \
         .config("spark.executor.memory", "7g") \
         .config("spark.executor.cores", "5") \
         .getOrCreate()
     # .config("spark.driver.memory", "8g") \]
 
     # Testing Locally
-    #sample_size = 15 #500  # 15
+    # sample_size = 15 #500  # 15
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
-    #metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
+    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
 
-    #component = preprocess_data(metadata_df)
+    # component = preprocess_data(metadata_df)
 
     component_id = 1
     component = get_saved_connected_component_subgraph(session, component_id)

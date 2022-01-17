@@ -74,6 +74,8 @@ hadoop fs -ls /user/data/original
 
 pip3 install --user pandas
 pip3 install --user pyspark
+pip3 install --user networkx
+pip3 install --user igraph
 
 cd processing
 ls -al
