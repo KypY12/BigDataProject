@@ -18,24 +18,29 @@ from igraph import Graph
 # Generate random graph with same number of authors and connections
 def create_random_graph(num_authors, num_connections):
 
-    # graph_generated_random = Graph.Erdos_Renyi(n=num_authors, m=num_connections)
-    #
-    # vertices_graph_generated_random = np.array(graph_generated_random.vs.indices)
-    # df_vertices = pd.DataFrame(data=vertices_graph_generated_random, columns=["id"])
-    #
-    # df_edges = graph_generated_random.get_edge_dataframe()
-    # df_edges.columns = ['src', 'dst']
+    graph_generated_random = Graph.Erdos_Renyi(n=num_authors, m=int(num_connections))
 
-    graph_generated_random = dense_gnm_random_graph(n=num_authors, m=num_connections)
-
-    vertices_graph_generated_random = np.array(graph_generated_random.nodes)
-    edges_graph_generated_random = np.array(graph_generated_random.edges)
-
+    vertices_graph_generated_random = np.array(graph_generated_random.vs.indices)
     df_vertices = pd.DataFrame(data=vertices_graph_generated_random, columns=["id"])
-    df_edges = pd.DataFrame(data=edges_graph_generated_random, columns=["src", "dst"])
+
+    df_edges = graph_generated_random.get_edge_dataframe()
+    df_edges.columns = ['src', 'dst']
+
+    # graph_generated_random = dense_gnm_random_graph(n=num_authors, m=num_connections)
+    #
+    # vertices_graph_generated_random = np.array(graph_generated_random.nodes)
+    # edges_graph_generated_random = np.array(graph_generated_random.edges)
+    #
+    # df_vertices = pd.DataFrame(data=vertices_graph_generated_random, columns=["id"])
+    # df_edges = pd.DataFrame(data=edges_graph_generated_random, columns=["src", "dst"])
 
     vertices_random_graph = session.createDataFrame(data=df_vertices)
     edges_random_graph = session.createDataFrame(data=df_edges)
+
+    df_edges.columns = ['dst', 'src']
+    reversed_edges_random_graph = session.createDataFrame(data=df_edges)
+
+    edges_random_graph = edges_random_graph.unionByName(reversed_edges_random_graph)
 
     try:
         import graphframes
@@ -59,14 +64,14 @@ if __name__ == "__main__":
     # .config("spark.driver.memory", "8g") \]
 
     # Testing Locally
-    # sample_size = 15 #500  # 15
+    sample_size = 15 #500  # 15
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
-    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
+    metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
 
-    # component = preprocess_data(metadata_df)
+    component = preprocess_data(metadata_df)
 
     component_id = 1
-    component = get_saved_connected_component_subgraph(session, component_id)
+    #component = get_saved_connected_component_subgraph(session, component_id)
 
     # characteristic_path_length_component = get_characteristic_path_length(component_graph=component)
     # print(f"Characteristic Path Length of the Component {component_id}: {characteristic_path_length_component}")
@@ -76,7 +81,7 @@ if __name__ == "__main__":
 
     # Generate random graph similar to the component
     random_graph = create_random_graph(num_authors=component.vertices.count(),
-                                       num_connections=component.edges.count()) # / 2)
+                                       num_connections=component.edges.count() / 2)
 
     # characteristic_path_length_random_graph = get_characteristic_path_length(component_graph=random_graph)
     # print(f"Characteristic Path Length of the Graph Random Generated similar to Component {component_id}: {characteristic_path_length_random_graph}")
