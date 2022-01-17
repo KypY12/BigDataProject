@@ -87,8 +87,8 @@ if __name__ == '__main__':
     session = SparkSession \
         .builder \
         .appName("Preprocessing Main") \
-        .config("spark.executor.memory", "8g") \
-        .config("spark.driver.memory", "8g") \
+        .config("spark.executor.memory", "7g") \
+        .config("spark.driver.memory", "1g") \
         .getOrCreate()
     # .config("spark.default.parallelism", "30") \
 
