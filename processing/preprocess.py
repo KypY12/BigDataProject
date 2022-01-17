@@ -23,17 +23,15 @@ def construct_e_and_v(metadata_df):
 
     # authors_relations.persist()
 
+    # authors_e = authors_relations \
+    #     .groupBy([f.col("src"), f.col("dst")]) \
+    #     .agg(f.count(f.col("article_id")).alias("articles_count"))
+
     authors_e = authors_relations \
         .groupBy([f.col("src"), f.col("dst")]) \
-        .agg(f.count(f.col("article_id")).alias("articles_count"))
-
-    authors_e_articles_ids = authors_relations \
-        .groupBy([f.col("src"), f.col("dst")]) \
-        .agg(f.collect_list("update_date").alias("update_dates"))
-        # .agg(f.collect_list("article_id").alias("articles_ids"))
-
-    authors_e_articles_ids.show()
-    print("ARTICLES IDS111 : ", authors_e_articles_ids.count())
+        .agg(f.collect_list("article_id").alias("articles_ids")) \
+        .agg(f.collect_list("update_date").alias("update_dates")) \
+        .agg(f.collect_list("article_categories").alias("articles_categories"))
 
     # Create a Vertex DataFrame with unique ID column "id"
     authors_v = metadata_df \
