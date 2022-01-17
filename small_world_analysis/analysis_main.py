@@ -64,14 +64,14 @@ if __name__ == "__main__":
     # .config("spark.driver.memory", "8g") \]
 
     # Testing Locally
-    sample_size = 15 #500  # 15
+    # sample_size = 15 #500  # 15
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
-    metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
+    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
 
-    component = preprocess_data(metadata_df)
+    # component = preprocess_data(metadata_df)
 
     component_id = 1
-    #component = get_saved_connected_component_subgraph(session, component_id)
+    component = get_saved_connected_component_subgraph(session, component_id)
 
     # characteristic_path_length_component = get_characteristic_path_length(component_graph=component)
     # print(f"Characteristic Path Length of the Component {component_id}: {characteristic_path_length_component}")
