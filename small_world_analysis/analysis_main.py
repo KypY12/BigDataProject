@@ -20,8 +20,7 @@ def create_random_graph(num_authors, num_connections):
 
     graph_generated_random = Graph.Erdos_Renyi(n=num_authors, m=int(num_connections))
 
-    vertices_graph_generated_random = np.array(graph_generated_random.vs.indices)
-    df_vertices = pd.DataFrame(data=vertices_graph_generated_random, columns=["id"])
+    df_vertices = pd.DataFrame(data=list(graph_generated_random.get_vertex_dataframe().index), columns=["id"])
 
     df_edges = graph_generated_random.get_edge_dataframe()
     df_edges.columns = ['src', 'dst']
