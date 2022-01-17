@@ -22,7 +22,7 @@ def create_random_graph(num_authors, num_connections):
 
     df_vertices = pd.DataFrame(data=list(graph_generated_random.get_vertex_dataframe().index), columns=["id"])
 
-    df_edges = graph_generated_random.get_edge_dataframe().astype('int32')
+    df_edges = graph_generated_random.get_edge_dataframe().astype('uint32')
     df_edges.columns = ['src', 'dst']
 
     # graph_generated_random = dense_gnm_random_graph(n=num_authors, m=num_connections)
@@ -70,7 +70,7 @@ if __name__ == "__main__":
 
     # component = preprocess_data(metadata_df)
 
-    component_id = 1
+    component_id = 2
     component = get_saved_connected_component_subgraph(session, component_id)
 
     # characteristic_path_length_component = get_characteristic_path_length(component_graph=component)
