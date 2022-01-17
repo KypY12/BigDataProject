@@ -27,12 +27,13 @@ def construct_e_and_v(metadata_df):
         .groupBy([f.col("src"), f.col("dst")]) \
         .agg(f.count(f.col("article_id")).alias("articles_count"))
 
-    # authors_e_articles_ids = authors_relations \
-    #     .groupBy([f.col("src"), f.col("dst")]) \
-    #     .agg(f.collect_list("article_id").alias("articles_ids"))
-    #
-    # authors_e_articles_ids.show()
-    # print("ARTICLES IDS : ", authors_e_articles_ids.count())
+    authors_e_articles_ids = authors_relations \
+        .groupBy([f.col("src"), f.col("dst")]) \
+        .agg(f.collect_list("update_date").alias("update_dates"))
+        # .agg(f.collect_list("article_id").alias("articles_ids"))
+
+    authors_e_articles_ids.show()
+    print("ARTICLES IDS111 : ", authors_e_articles_ids.count())
 
     # Create a Vertex DataFrame with unique ID column "id"
     authors_v = metadata_df \
@@ -100,7 +101,7 @@ if __name__ == '__main__':
     metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
 
     g = preprocess_data(metadata_df)
-    write_coauthorship_graph(g, "../data")
+    write_coauthorship_graph(g, "../data/graph_with_more_info")
 
     # g = read_coauthorship_graph(session, "../data")
 
