@@ -76,6 +76,8 @@ pip3 install --user pandas
 pip3 install --user pyspark
 pip3 install --user networkx
 pip3 install --user igraph
+pip3 install --user dask
+python3 -m pip install "dask[dataframe]" --upgrade
 
 cd processing
 ls -al

@@ -20,6 +20,7 @@ import dask.dataframe as dd
 def create_random_graph(num_authors, num_connections):
 
     graph_generated_random = Graph.Erdos_Renyi(n=num_authors, m=int(num_connections))
+    print(graph_generated_random.es.attributes_names())
 
     df_vertices = pd.DataFrame(data=list(graph_generated_random.get_vertex_dataframe().index), columns=["id"])
 
@@ -65,20 +66,20 @@ if __name__ == "__main__":
     # .config("spark.driver.memory", "8g") \]
 
     # Testing Locally
-    # sample_size = 15 #500  # 15
+    sample_size = 15 #500  # 15
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
-    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
+    metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
 
-    # component = preprocess_data(metadata_df)
+    component = preprocess_data(metadata_df)
 
     component_id = 1
-    component = get_saved_connected_component_subgraph(session, component_id)
+    #component = get_saved_connected_component_subgraph(session, component_id)
 
     # characteristic_path_length_component = get_characteristic_path_length(component_graph=component)
     # print(f"Characteristic Path Length of the Component {component_id}: {characteristic_path_length_component}")
 
-    clustering_coefficient_component = get_clustering_coefficient(component_graph=component)
-    print(f"Clustering Coefficient of the Component {component_id}: {clustering_coefficient_component}\n")
+    #clustering_coefficient_component = get_clustering_coefficient(component_graph=component)
+    #print(f"Clustering Coefficient of the Component {component_id}: {clustering_coefficient_component}\n")
 
     # Generate random graph similar to the component
     random_graph = create_random_graph(num_authors=component.vertices.count(),
@@ -87,5 +88,5 @@ if __name__ == "__main__":
     # characteristic_path_length_random_graph = get_characteristic_path_length(component_graph=random_graph)
     # print(f"Characteristic Path Length of the Graph Random Generated similar to Component {component_id}: {characteristic_path_length_random_graph}")
 
-    clustering_coefficient_random_graph = get_clustering_coefficient(component_graph=random_graph)
-    print(f"Clustering Coefficient of the Graph Random Generated similar to Component {component_id}: {clustering_coefficient_random_graph}\n")
+    #clustering_coefficient_random_graph = get_clustering_coefficient(component_graph=random_graph)
+    #print(f"Clustering Coefficient of the Graph Random Generated similar to Component {component_id}: {clustering_coefficient_random_graph}\n")
