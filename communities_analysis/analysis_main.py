@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
     # first_component = preprocess_data(metadata_df)
 
-    component_id = 3
+    component_id = 2
     first_component = get_saved_connected_component_subgraph(session, component_id)
 
     # communities = lpa.find_communities_in_graph(graph=first_component,
