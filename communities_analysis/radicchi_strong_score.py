@@ -92,7 +92,9 @@ def get_radicchi_strong_score(communities_graph):
 
     num_all_authors = connections_authors.distinct().count()
 
-    radicchi_strong_score = num_strong_authors / num_all_authors
+    radicchi_strong_score = None
+    if num_all_authors > 0:
+        radicchi_strong_score = num_strong_authors / num_all_authors
 
     grouped_authors_by_community.unpersist()
     connections_authors_within_commnunity.unpersist()
