@@ -65,11 +65,11 @@ if __name__ == "__main__":
 
     # component = preprocess_data(metadata_df)
 
-    component_id = 2
+    component_id = 1
     component = get_saved_connected_component_subgraph(session, component_id)
 
-    characteristic_path_length_component = get_characteristic_path_length(component_graph=component)
-    print(f"Characteristic Path Length of the Component {component_id}: {characteristic_path_length_component}")
+    # characteristic_path_length_component = get_characteristic_path_length(component_graph=component)
+    # print(f"Characteristic Path Length of the Component {component_id}: {characteristic_path_length_component}")
 
     clustering_coefficient_component = get_clustering_coefficient(component_graph=component)
     print(f"Clustering Coefficient of the Component {component_id}: {clustering_coefficient_component}\n")
@@ -78,8 +78,8 @@ if __name__ == "__main__":
     random_graph = create_random_graph(num_authors=component.vertices.count(),
                                        num_connections=component.edges.count()) # / 2)
 
-    characteristic_path_length_random_graph = get_characteristic_path_length(component_graph=random_graph)
-    print(f"Characteristic Path Length of the Graph Random Generated similar to Component {component_id}: {characteristic_path_length_random_graph}")
+    # characteristic_path_length_random_graph = get_characteristic_path_length(component_graph=random_graph)
+    # print(f"Characteristic Path Length of the Graph Random Generated similar to Component {component_id}: {characteristic_path_length_random_graph}")
 
     clustering_coefficient_random_graph = get_clustering_coefficient(component_graph=random_graph)
     print(f"Clustering Coefficient of the Graph Random Generated similar to Component {component_id}: {clustering_coefficient_random_graph}\n")
