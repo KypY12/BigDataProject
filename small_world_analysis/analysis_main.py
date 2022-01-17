@@ -13,6 +13,7 @@ import pyspark.sql.functions as f
 
 from networkx.generators.random_graphs import dense_gnm_random_graph, gnp_random_graph
 from igraph import Graph
+import dask.dataframe as dd
 
 
 # Generate random graph with same number of authors and connections
@@ -22,7 +23,7 @@ def create_random_graph(num_authors, num_connections):
 
     df_vertices = pd.DataFrame(data=list(graph_generated_random.get_vertex_dataframe().index), columns=["id"])
 
-    df_edges = graph_generated_random.get_edge_dataframe().astype('uint32')
+    df_edges = dd.from_pandas(graph_generated_random.get_edge_dataframe().astype('uint32'), npartitions=10)
     df_edges.columns = ['src', 'dst']
 
     # graph_generated_random = dense_gnm_random_graph(n=num_authors, m=num_connections)
@@ -34,10 +35,10 @@ def create_random_graph(num_authors, num_connections):
     # df_edges = pd.DataFrame(data=edges_graph_generated_random, columns=["src", "dst"])
 
     vertices_random_graph = session.createDataFrame(data=df_vertices)
-    edges_random_graph = session.createDataFrame(data=df_edges)
+    edges_random_graph = session.createDataFrame(data=df_edges.compute())
 
     df_edges.columns = ['dst', 'src']
-    reversed_edges_random_graph = session.createDataFrame(data=df_edges)
+    reversed_edges_random_graph = session.createDataFrame(data=df_edges.compute())
 
     edges_random_graph = edges_random_graph.unionByName(reversed_edges_random_graph)
 
@@ -70,7 +71,7 @@ if __name__ == "__main__":
 
     # component = preprocess_data(metadata_df)
 
-    component_id = 2
+    component_id = 1
     component = get_saved_connected_component_subgraph(session, component_id)
 
     # characteristic_path_length_component = get_characteristic_path_length(component_graph=component)
