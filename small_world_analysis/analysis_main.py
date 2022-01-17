@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     # component = preprocess_data(metadata_df)
 
-    component_id = 1
+    component_id = 2
     component = get_saved_connected_component_subgraph(session, component_id)
 
     characteristic_path_length_component = get_characteristic_path_length(component_graph=component)
@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     # Generate random graph similar to the component
     random_graph = create_random_graph(num_authors=component.vertices.count(),
-                                       num_connections=component.edges.count() / 2)
+                                       num_connections=component.edges.count()) # / 2)
 
     characteristic_path_length_random_graph = get_characteristic_path_length(component_graph=random_graph)
     print(f"Characteristic Path Length of the Graph Random Generated similar to Component {component_id}: {characteristic_path_length_random_graph}")
