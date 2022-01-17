@@ -29,10 +29,10 @@ def construct_e_and_v(metadata_df):
 
     authors_e = authors_relations \
         .groupBy([f.col("src"), f.col("dst")]) \
-        .agg(f.count(f.col("article_id")).alias("articles_count")) \
-        .agg(f.collect_list("article_id").alias("articles_ids")) \
-        .agg(f.collect_list("update_date").alias("update_dates")) \
-        .agg(f.collect_list("article_categories").alias("articles_categories"))
+        .agg(f.count(f.col("article_id")).alias("articles_count"),
+             f.collect_list("article_id").alias("articles_ids"),
+             f.collect_list("article_categories").alias("articles_categories"),
+             f.collect_list("update_date").alias("articles_update_date"))
 
     # Create a Vertex DataFrame with unique ID column "id"
     authors_v = metadata_df \
@@ -97,15 +97,15 @@ if __name__ == '__main__':
     # sample_size = 100
     # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json").limit(sample_size)
 
-    # metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
-    #
-    # g = preprocess_data(metadata_df)
-    # write_coauthorship_graph(g, "../data/graph_with_more_info")
+    metadata_df = session.read.json("../data/original/arxiv-metadata-oai-snapshot.json")
 
-    g = read_coauthorship_graph(session, "../data")
+    g = preprocess_data(metadata_df)
+    write_coauthorship_graph(g, "../data/graph_with_more_info")
+
+    # g = read_coauthorship_graph(session, "../data")
 
     g.vertices.show()
-    g.edges.orderBy("articles_count", ascending=False).show()
+    g.edges.show()
 
     print(f"Vertex Count : {g.vertices.count()}")
     print(f"Edge Count : {g.edges.count()}")
