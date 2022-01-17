@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     # Generate random graph similar to the component
     random_graph = create_random_graph(num_authors=component.vertices.count(),
-                                       num_connections=component.edges.count())
+                                       num_connections=component.edges.count() / 2)
 
     characteristic_path_length_random_graph = get_characteristic_path_length(component_graph=random_graph)
     print(f"Characteristic Path Length of the Graph Random Generated similar to Component {component_id}: {characteristic_path_length_random_graph}")

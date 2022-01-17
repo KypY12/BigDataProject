@@ -4,14 +4,21 @@ import pyspark.sql.functions as f
 # Compute the average shortest path length between every pair of authors of the component
 def get_characteristic_path_length(component_graph):
 
+    print("Print 1 ", component_graph.vertices.count())
+
     # Compute the shortest paths using already implemented method
     shortest_paths = component_graph \
         .shortestPaths(landmarks=component_graph.edges.select(f.collect_set('src')).first()[0]) \
-        .withColumnRenamed("id", "author")
+        .withColumnRenamed("id", "author") \
+        .persist()
+
+    print("Print 2 ", component_graph.vertices.count())
 
     # Get only the lengths of all shortest paths for every author
     shortest_paths = shortest_paths \
         .select(f.col('author'), f.map_values('distances').alias('list_distances'))
+
+    print("Print 3 ", component_graph.vertices.count())
 
     # Sum the lengths of all shortest paths for every author
     shortest_paths = shortest_paths \
@@ -21,6 +28,7 @@ def get_characteristic_path_length(component_graph):
         .orderBy("summed_distances", ascending=False)
 
     shortest_paths = shortest_paths.persist()
+    print("Print 4 ", component_graph.vertices.count())
 
     # Sum the lengths of all shortest paths for all the authors
     sum_all_distances = shortest_paths \
