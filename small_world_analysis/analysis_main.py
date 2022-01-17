@@ -22,7 +22,7 @@ def create_random_graph(num_authors, num_connections):
 
     df_vertices = pd.DataFrame(data=list(graph_generated_random.get_vertex_dataframe().index), columns=["id"])
 
-    df_edges = graph_generated_random.get_edge_dataframe()
+    df_edges = graph_generated_random.get_edge_dataframe().astype('int32')
     df_edges.columns = ['src', 'dst']
 
     # graph_generated_random = dense_gnm_random_graph(n=num_authors, m=num_connections)
