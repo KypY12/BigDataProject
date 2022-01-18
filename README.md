@@ -1,9 +1,9 @@
 # Big Data Project - Dat.P10 - Advanced graph-based analysis
-
+<!-- 
 Take co-authorship graph as input (but not only!) in order to:
 
 1. Look for collaboration islands - see what researchers are more likely to collaborate with each other (co-authorship). Is it influenced by research field?
-2. Check for rising stars (authors with high growth in number of publications)
+2. Check for rising stars (authors with high growth in number of publications) -->
 
 <!-- Take citation and co-authorship graphs as input (but not only!) in order to: -->
 
