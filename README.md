@@ -14,7 +14,7 @@ Take co-authorship graph as input (but not only!) in order to:
 
 ## Project links:
 
-[Project report](https://docs.google.com/document/d/19FschCe1pHffRWKnn23uJAe-SOd_Keku8Zj7bXu7nUY/edit?usp=sharing)
+[Project report](https://docs.google.com/document/d/1Fu9FDBuReBT78k_myCzDT_9PX6moEcSI/edit?usp=sharing&ouid=102869053224063436033&rtpof=true&sd=true)
 
 ## Resources links: 
 
